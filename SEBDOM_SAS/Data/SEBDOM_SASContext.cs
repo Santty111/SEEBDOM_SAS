@@ -15,5 +15,7 @@ namespace SEBDOM_SAS.Data
         }
 
         public DbSet<SEBDOM_SAS.Models.Producto> Producto { get; set; } = default!;
+
+        public DbSet<SEBDOM_SAS.Models.Historial> Historial { get; set; } = default!;
     }
 }

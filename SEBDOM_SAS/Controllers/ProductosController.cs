@@ -88,8 +88,8 @@ namespace SEBDOM_SAS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-    int Id,
-    [Bind("Id,UnidadMedida,Entrada,Salida")] Producto productoActualizado)
+            int Id,
+            [Bind("Id,UnidadMedida,Entrada,Salida")] Producto productoActualizado)
         {
             var producto = await _context.Producto.FindAsync(Id);
             if (producto == null)
@@ -97,42 +97,80 @@ namespace SEBDOM_SAS.Controllers
                 return NotFound();
             }
 
-            // 1. Primero verificar si cambió la unidad de medida
+            // Registrar historial antes de cualquier cambio
+            decimal stockAnterior = producto.StockActual;
+
+            // 1. Verificar cambio de unidad de medida
             if (producto.UnidadMedida != productoActualizado.UnidadMedida)
             {
-                // 2. Convertir el stock existente a la nueva unidad
+                // Registrar cambio de unidad en el historial
+                var historialCambioUnidad = new Historial
+                {
+                    ProductoId = producto.Id,
+                    Fecha = DateTime.Now,
+                    TipoMovimiento = "Ajuste",
+                    Cantidad = 0,
+                    StockAnterior = stockAnterior,
+                    StockNuevo = stockAnterior,
+                    Notas = $"Cambio de unidad de {producto.UnidadMedida} a {productoActualizado.UnidadMedida}"
+                };
+                _context.Historial.Add(historialCambioUnidad);
+
+                // Conversión de unidades
                 if (productoActualizado.UnidadMedida == UnidadMedida.Libras)
                 {
-                    // Conversión de kg a lbs
                     producto.StockActual *= 2.20462m;
                 }
                 else
                 {
-                    // Conversión de lbs a kg
                     producto.StockActual *= 0.453592m;
                 }
             }
 
-            // 3. Actualizar la unidad de medida (después de la conversión)
+            // 2. Actualizar unidad de medida
             producto.UnidadMedida = productoActualizado.UnidadMedida;
 
-            // Validar salida mayor que stock y calcular diferencia
-            if (productoActualizado.Salida.HasValue && producto.StockActual < productoActualizado.Salida.Value)
-            {
-                decimal diferencia = (decimal)producto.StockActual - productoActualizado.Salida.Value;
-                TempData["AlertaStock"] = $"El stock actual es menor!{Environment.NewLine}Faltante = {diferencia.ToString("0.00")} {producto.UnidadMedida}";
-                return RedirectToAction(nameof(Index));
-            }
-
-            // Procesar entradas y salidas
-            if (productoActualizado.Entrada.HasValue)
+            // 3. Procesar entradas
+            if (productoActualizado.Entrada.HasValue && productoActualizado.Entrada.Value > 0)
             {
                 producto.StockActual += productoActualizado.Entrada.Value;
+
+                var historialEntrada = new Historial
+                {
+                    ProductoId = producto.Id,
+                    Fecha = DateTime.Now,
+                    TipoMovimiento = "Entrada",
+                    Cantidad = productoActualizado.Entrada.Value,
+                    StockAnterior = stockAnterior,
+                    StockNuevo = producto.StockActual,
+                    Notas = "Registro de entrada"
+                };
+                _context.Historial.Add(historialEntrada);
             }
 
-            if (productoActualizado.Salida.HasValue)
+            // 4. Procesar salidas
+            if (productoActualizado.Salida.HasValue && productoActualizado.Salida.Value > 0)
             {
+                if (producto.StockActual < productoActualizado.Salida.Value)
+                {
+                    decimal diferencia = producto.StockActual - productoActualizado.Salida.Value;
+                    TempData["AlertaStock"] = $"El stock actual es menor!{Environment.NewLine}Faltante = {diferencia.ToString("0.00")} {producto.UnidadMedida}";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 producto.StockActual -= productoActualizado.Salida.Value;
+
+                var historialSalida = new Historial
+                {
+                    ProductoId = producto.Id,
+                    Fecha = DateTime.Now,
+                    TipoMovimiento = "Salida",
+                    Cantidad = productoActualizado.Salida.Value,
+                    StockAnterior = stockAnterior,
+                    StockNuevo = producto.StockActual,
+                    Notas = "Registro de salida"
+                };
+                _context.Historial.Add(historialSalida);
             }
 
             try
@@ -151,7 +189,6 @@ namespace SEBDOM_SAS.Controllers
                     throw;
                 }
             }
-
 
             return RedirectToAction(nameof(Index));
         }
