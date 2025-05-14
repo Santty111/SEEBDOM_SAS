@@ -1,34 +1,60 @@
 ﻿@model SEBDOM_SAS.Models.RegistroPulpo
-
 @{
     ViewData["Title"] = "Nuevo Registro de Pulpo";
 }
 
-<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/pulpos.css" asp-append-version="true" />
 
-<form asp-action="Create" method="post">
-    <div class="form-group mb-3">
-        <label asp-for="Fecha" class="control-label"></label>
-        <input asp-for="Fecha" class="form-control" type="date" required />
-    </div>
+<div class="pulpos-container">
+    <div class="pulpo-create-container">
+        <h1 class="pulpo-create-header">
+            <i class="fas fa-fish me-2"></i>@ViewData["Title"]
+        </h1>
 
-    <div class="form-group mb-3">
-        <label class="control-label">Seleccione los códigos:</label>
-        <div class="row">
-            @foreach (var codigo in ViewBag.Codigos)
-            {
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox"
-                               name="codigosSeleccionados" value="@codigo" id="@codigo">
-                        <label class="form-check-label" for="@codigo">
-                            @codigo
-                        </label>
-                    </div>
+        <form asp-action="Create" method="post">
+            <div class="form-group mb-4">
+                <label asp-for="Fecha" class="pulpo-form-label">
+                    <i class="far fa-calendar-alt me-2"></i>Fecha del Registro
+                </label>
+                <input asp-for="Fecha" class="pulpo-form-control form-control" type="date" required />
+                <span asp-validation-for="Fecha" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="pulpo-form-label">
+                    <i class="fas fa-tags me-2"></i>Seleccione los códigos:
+                </label>
+                <div class="row">
+                    @foreach (var codigo in ViewBag.Codigos)
+                    {
+                        <div class="col-md-3 mb-2">
+                            <div class="pulpo-checkbox-container">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="codigosSeleccionados" value="@codigo" id="@codigo">
+                                    <label class="form-check-label pulpo-checkbox-label" for="@codigo">
+                                        <span class="badge bg-primary">@codigo</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-    </div>
+            </div>
 
-    <button type="submit" class="btn btn-primary">Continuar</button>
-</form>
+            <div class="text-center">
+                <button type="submit" class="btn btn-pulpo-continue btn-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

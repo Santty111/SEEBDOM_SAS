@@ -1,92 +1,101 @@
 ﻿@model IEnumerable<SEBDOM_SAS.Models.Producto>
 @{
     ViewData["Title"] = "Productos";
+    Layout = "_Layout"; // Asegúrate de que uses tu layout
 }
 
-@if (TempData["AlertaStock"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i>
-        @{
-            var alertMessage = TempData["AlertaStock"].ToString();
-            var lines = alertMessage.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-        }
-        @foreach (var line in lines)
-        {
-            @line
-            <br />
-        }
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<link rel="stylesheet" href="~/css/productos.css" asp-append-version="true" />
 
-<h1 class="mb-4">Productos</h1>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Nuevo Producto
-            </a>
-
-            <div class="badge bg-info text-dark">
-                <i class="fas fa-boxes me-1"></i> Total Productos: @Model.Count()
-            </div>
+<div class="productos-container">
+    @if (TempData["AlertaStock"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @{
+                var alertMessage = TempData["AlertaStock"].ToString();
+                var lines = alertMessage.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            }
+            @foreach (var line in lines)
+            {
+                @line
+                <br />
+            }
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    }
 
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nombre Producto</th>
-                        <th>Unidad</th>
-                        <th>Entrada</th>
-                        <th>Salida</th>
-                        <th>Stock Actual</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+    <h1 class="productos-header mb-4">
+        <i class="fas fa-box-open me-2"></i>@ViewData["Title"]
+    </h1>
+
+    <div class="productos-card card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a asp-action="Create" class="btn btn-primary btn-productos">
+                    <i class="fas fa-plus me-2"></i>Nuevo Producto
+                </a>
+
+                <div class="badge bg-info text-white">
+                    <i class="fas fa-boxes me-1"></i> Total Productos: @Model.Count()
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="productos-table table table-hover">
+                    <thead>
                         <tr>
-                            <form asp-action="Edit" method="post">
-                                @Html.Hidden("Id", item.Id)
-                            <td class="align-middle">@item.NombreProducto</td>
-                            <td>
-                                <select name="UnidadMedida" class="form-select form-select-sm">
-                                    <option value="0" selected="@(item.UnidadMedida == UnidadMedida.Kilogramos)">Kg</option>
-                                    <option value="1" selected="@(item.UnidadMedida == UnidadMedida.Libras)">Lbs</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.001" name="Entrada" value="@item.Entrada"
-                                       class="form-control form-control-sm" style="background-color: #e0f7fa;" />
-                            </td>
-                            <td>
-                                <input type="number" step="0.001" name="Salida" value="@item.Salida"
-                                       class="form-control form-control-sm" style="background-color: #ffebee;" />
-                            </td>
-                            <td class="align-middle">
-                                <span class="badge stock-badge"
-                                      data-product="@item.NombreProducto.ToLower()"
-                                      data-stock="@item.StockActual">
-                                        @item.StockActual.ToString("N2") @(item.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")
-                                </span>
-                            </td>
-                            <td class="align-middle">
-                                <button type="submit" class="btn btn-sm btn-success me-1">
-                                    <i class="fas fa-save"></i>
-                                </button>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </td>
-                            </form>
+                            <th><i class="fas fa-tag me-1"></i>Nombre Producto</th>
+                            <th><i class="fas fa-balance-scale me-1"></i>Unidad</th>
+                            <th><i class="fas fa-sign-in-alt me-1"></i>Entrada</th>
+                            <th><i class="fas fa-sign-out-alt me-1"></i>Salida</th>
+                            <th><i class="fas fa-box me-1"></i>Stock Actual</th>
+                            <th><i class="fas fa-cogs me-1"></i>Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <form asp-action="Edit" method="post">
+                                    @Html.Hidden("Id", item.Id)
+                                <td class="align-middle">
+                                    <i class="fas fa-cube me-2"></i>@item.NombreProducto
+                                </td>
+                                <td>
+                                    <select name="UnidadMedida" class="form-select form-select-sm">
+                                        <option value="0" selected="@(item.UnidadMedida == UnidadMedida.Kilogramos)">Kg</option>
+                                        <option value="1" selected="@(item.UnidadMedida == UnidadMedida.Libras)">Lbs</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.001" name="Entrada" value="@item.Entrada"
+                                           class="form-control form-control-sm" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.001" name="Salida" value="@item.Salida"
+                                           class="form-control form-control-sm" />
+                                </td>
+                                <td class="align-middle">
+                                    <span class="stock-badge"
+                                          data-product="@item.NombreProducto.ToLower()"
+                                          data-stock="@item.StockActual">
+                                            @item.StockActual.ToString("N2") @(item.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")
+                                    </span>
+                                </td>
+                                <td class="align-middle">
+                                    <button type="submit" class="btn btn-sm btn-success me-1 btn-productos">
+                                        <i class="fas fa-save"></i> Guardar
+                                    </button>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger btn-productos">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </a>
+                                </td>
+                                </form>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -98,25 +107,52 @@
         document.querySelectorAll('input[name="Salida"]').forEach(input => {
             input.addEventListener('change', function() {
                 const row = this.closest('tr');
-                const stockActual = parseFloat(row.querySelector('td:nth-child(5) span').textContent);
+                const stockText = row.querySelector('td:nth-child(5) span').textContent;
+                const stockActual = parseFloat(stockText);
                 const salida = parseFloat(this.value) || 0;
 
                 if (salida > stockActual) {
                     this.classList.add('is-invalid');
                     row.querySelector('button[type="submit"]').disabled = true;
+
+                    // Mostrar tooltip de error
+                    this.setAttribute('title', 'No puede sacar más de lo que hay en stock');
+                    $(this).tooltip('show');
                 } else {
                     this.classList.remove('is-invalid');
                     row.querySelector('button[type="submit"]').disabled = false;
+                    $(this).tooltip('hide');
                 }
             });
         });
 
-                applyStockColorRules();
-            });
+        // Inicializar tooltips
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
         });
 
-          function onStockUpdated() {
+        function applyStockColorRules() {
+            document.querySelectorAll('.stock-badge').forEach(badge => {
+                const stock = parseFloat(badge.getAttribute('data-stock'));
+
+                if (stock <= 0) {
+                    badge.style.backgroundColor = '#e74c3c'; // Rojo para stock bajo/negativo
+                } else if (stock < 10) {
+                    badge.style.backgroundColor = '#f39c12'; // Naranja para stock bajo
+                } else {
+                    badge.style.backgroundColor = '#2ecc71'; // Verde para stock normal
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            applyStockColorRules();
+        });
+
+        function onStockUpdated() {
             refreshStockDisplays();
+            applyStockColorRules();
         }
     </script>
-}
+}   
+

@@ -1,0 +1,114 @@
+﻿/* Estilos generales para el historial */
+.historial-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.historial-card {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.historial-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px 20px;
+    border-bottom: none;
+}
+
+.historial-table {
+    margin-bottom: 0;
+}
+
+    .historial-table thead {
+        background-color: #34495e;
+        color: white;
+    }
+
+    .historial-table th {
+        padding: 12px 15px;
+        font-weight: 500;
+        vertical-align: middle;
+    }
+
+    .historial-table td {
+        padding: 10px 15px;
+        vertical-align: middle;
+    }
+
+/* Estilos para los badges */
+.badge-entrada {
+    background-color: #2ecc71;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.badge-salida {
+    background-color: #e74c3c;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Estilos para los filtros */
+.filter-form {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+    .filter-form label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+/* Estilos para los botones */
+.btn-historial {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+}
+
+.btn-filter {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+    .btn-filter:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+        color: white;
+    }
+
+/* Estilos para valores numéricos */
+.text-entrada {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.text-salida {
+    color: #c0392b;
+    font-weight: 500;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .historial-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .filter-form .row > div {
+        margin-bottom: 10px;
+    }
+}

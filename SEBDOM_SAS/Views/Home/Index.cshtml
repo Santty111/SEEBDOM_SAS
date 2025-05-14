@@ -1,8 +1,29 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
+<body>
+    <div class="home-background">
+        <div class="quadrant top-left"></div>
+        <div class="quadrant top-right"></div>
+        <div class="quadrant bottom-left"></div>
+        <div class="quadrant bottom-right"></div>
+    </div>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    <div class="logo-container">
+        <a href="/Productos/Index">
+            <img src="~/images/LogoSEDOOM.png" alt="Logo Sebdom Calamares" />
+        </a>
+        <div class="curved-text">
+            <svg viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet">
+                <path id="curve-path" d="M 50 80 Q 200 190 350 80" fill="transparent" />
+                <text text-anchor="middle">
+                    <textPath href="#curve-path" startOffset="50%">
+                        Control de Inventario SEBDOM
+                    </textPath>
+                </text>
+            </svg>
+        </div>
+    </div>
+
+
+</body>

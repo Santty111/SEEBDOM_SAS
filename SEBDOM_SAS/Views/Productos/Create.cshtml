@@ -1,33 +1,50 @@
 ﻿@model SEBDOM_SAS.Models.Producto
-
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Crear Producto";
 }
 
-<h1>Create</h1>
+<div class="productos-container">
+    <h1 class="productos-header mb-4">
+        <i class="fas fa-plus-circle me-2"></i>@ViewData["Title"]
+    </h1>
 
-<h4>Producto</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="productos-card card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-4 text-muted">
+                <i class="fas fa-info-circle me-2"></i>Información del Producto
+            </h4>
 
-            <div class="form-group">
-                <label asp-for="NombreProducto" class="control-label"></label>
-                <input asp-for="NombreProducto" class="form-control" />
-                <span asp-validation-for="NombreProducto" class="text-danger"></span>
+            <hr class="border-secondary" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-light border border-secondary"></div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="NombreProducto" class="form-label text-muted">
+                                <i class="fas fa-tag me-2"></i>Nombre del Producto
+                            </label>
+                            <input asp-for="NombreProducto" class="form-control border border-secondary" />
+                            <span asp-validation-for="NombreProducto" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary btn-productos" style="background-color: #4da6ff; border-color: #4da6ff;">
+                                <i class="fas fa-save me-2"></i>Crear Producto
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-group mt-3">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<div class="mt-2">
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary btn-productos" style="background-color: #6c757d; border-color: #6c757d;">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+        </a>
+    </div>
 </div>
 
 @section Scripts {

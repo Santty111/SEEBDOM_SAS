@@ -1,73 +1,90 @@
 ﻿@model IEnumerable<SEBDOM_SAS.Models.Historial>
-
 @{
     ViewData["Title"] = "Historial de Movimientos";
 }
 
-<div class="card shadow">
-    <div class="card-header bg-primary text-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">@ViewData["Title"]</h4>
-            <div>
-                <a asp-action="Index" class="btn btn-sm btn-light">Ver todo</a>
+<link rel="stylesheet" href="~/css/historial.css" asp-append-version="true" />
+
+<div class="historial-container">
+    <div class="historial-card card">
+        <div class="historial-header card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-history me-2"></i>@ViewData["Title"]</h4>
+                <div>
+                    <a asp-action="Index" class="btn btn-sm btn-light btn-historial">
+                        <i class="fas fa-list me-1"></i>Ver todo
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card-body">
-        <form method="get" class="mb-4">
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label">Fecha Inicio</label>
-                    <input type="date" name="fechaInicio" class="form-control" value="@Context.Request.Query["fechaInicio"]">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Fecha Fin</label>
-                    <input type="date" name="fechaFin" class="form-control" value="@Context.Request.Query["fechaFin"]">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Producto</label>
-                    <select name="productoId" class="form-select" asp-items="@(new SelectList(ViewBag.Productos, "Id", "NombreProducto"))">
-                        <option value="">Todos los productos</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                </div>
-            </div>
-        </form>
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Producto</th>
-                        <th>Tipo</th>
-                        <th class="text-end">Cantidad</th>
-                        <th class="text-end">Stock Anterior</th>
-                        <th class="text-end">Stock Nuevo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+        <div class="card-body">
+            <form method="get" class="filter-form">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="far fa-calendar-alt me-2"></i>Fecha Inicio</label>
+                        <input type="date" name="fechaInicio" class="form-control" value="@Context.Request.Query["fechaInicio"]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="far fa-calendar-alt me-2"></i>Fecha Fin</label>
+                        <input type="date" name="fechaFin" class="form-control" value="@Context.Request.Query["fechaFin"]">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="fas fa-box me-2"></i>Producto</label>
+                        <select name="productoId" class="form-select" asp-items="@(new SelectList(ViewBag.Productos, "Id", "NombreProducto"))">
+                            <option value="">Todos los productos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-filter btn-historial">
+                            <i class="fas fa-filter me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="historial-table table">
+                    <thead>
                         <tr>
-                            <td>@item.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.Producto.NombreProducto</td>
-                            <td>
-                                <span class="badge @(item.TipoMovimiento == "Entrada" ? "bg-success" : "bg-danger")">
-                                    @item.TipoMovimiento
-                                </span>
-                            </td>
-                            <td class="text-end @(item.TipoMovimiento == "Entrada" ? "text-success" : "text-danger")">
-                                @(item.TipoMovimiento == "Entrada" ? "+" : "-")@item.Cantidad.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")
-                            </td>
-                            <td class="text-end">@item.StockAnterior.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")</td>
-                            <td class="text-end fw-bold">@item.StockNuevo.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")</td>
+                            <th><i class="far fa-clock me-1"></i>Fecha</th>
+                            <th><i class="fas fa-tag me-1"></i>Producto</th>
+                            <th><i class="fas fa-exchange-alt me-1"></i>Tipo</th>
+                            <th class="text-end"><i class="fas fa-weight-hanging me-1"></i>Cantidad</th>
+                            <th class="text-end"><i class="fas fa-box-open me-1"></i>Stock Anterior</th>
+                            <th class="text-end"><i class="fas fa-boxes me-1"></i>Stock Nuevo</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.Producto.NombreProducto</td>
+                                <td>
+                                    <span class="badge @(item.TipoMovimiento == "Entrada" ? "badge-entrada" : "badge-salida")">
+                                        @item.TipoMovimiento
+                                    </span>
+                                </td>
+                                <td class="text-end @(item.TipoMovimiento == "Entrada" ? "text-entrada" : "text-salida")">
+                                    @(item.TipoMovimiento == "Entrada" ? "+" : "-")@item.Cantidad.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")
+                                </td>
+                                <td class="text-end">@item.StockAnterior.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")</td>
+                                <td class="text-end fw-bold">@item.StockNuevo.ToString("N2") @(item.Producto.UnidadMedida == UnidadMedida.Kilogramos ? "kg" : "lbs")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Inicializar tooltips si es necesario
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

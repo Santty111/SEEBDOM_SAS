@@ -1,53 +1,70 @@
 ﻿@model SEBDOM_SAS.Models.RegistroPulpo
-
 @{
     ViewData["Title"] = "Añadir Proveedores y Precios";
 }
 
-<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/pulpos.css" asp-append-version="true" />
 
-<form asp-action="AddProveedores" method="post" id="proveedoresForm">
-    <input type="hidden" name="registroId" value="@Model.Id" />
+<div class="pulpos-container">
+    <div class="proveedores-container">
+        <h1 class="proveedores-header">
+            <i class="fas fa-truck me-2"></i>@ViewData["Title"]
+        </h1>
 
-    @foreach (var codigo in ViewBag.Codigos)
-    {
-        <div class="card mb-3">
-            <div class="card-header bg-info text-white">
-                <h5>Código: @codigo</h5>
-            </div>
-            <div class="card-body">
-                <div class="form-group mb-3">
-                    <label>Nombre del Proveedor *</label>
-                    <input type="text" name="proveedoresData[@codigo].Nombre" class="form-control" required>
-                </div>
+        <form asp-action="AddProveedores" method="post" id="proveedoresForm">
+            <input type="hidden" name="registroId" value="@Model.Id" />
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Precio Normal</label>
-                            <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioNormal" class="form-control">
+            @foreach (var codigo in ViewBag.Codigos)
+            {
+                <div class="proveedor-card card">
+                    <div class="proveedor-card-header card-header">
+                        <h5 class="mb-0"><i class="fas fa-barcode me-2"></i>Código: @codigo</h5>
+                    </div>
+                    <div class="proveedor-card-body card-body">
+                        <div class="form-group mb-4">
+                            <label class="proveedor-form-label">
+                                <i class="fas fa-user-tie me-2"></i>Nombre del Proveedor *
+                            </label>
+                            <input type="text" name="proveedoresData[@codigo].Nombre"
+                                   class="proveedor-form-control form-control" required>
+                            <small class="invalid-feedback">Este campo es obligatorio</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="proveedor-form-label">
+                                        <i class="fas fa-dollar-sign me-2"></i>Precio Normal
+                                    </label>
+                                    <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioNormal"
+                                           class="proveedor-form-control form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="proveedor-form-label">
+                                        <i class="fas fa-tags me-2"></i>Precio Especial
+                                    </label>
+                                    <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioEspecial"
+                                           class="proveedor-form-control form-control">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Precio Especial</label>
-                            <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioEspecial" class="form-control">
-                        </div>
-                    </div>
                 </div>
-            </div>
-        </div>
-    }
+            }
 
-    <div class="d-flex justify-content-between">
-        <a asp-action="Create" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Regresar a Nuevo Registro
-        </a>
-        <button type="submit" class="btn btn-success">
-            Guardar y Continuar <i class="fas fa-arrow-right"></i>
-        </button>
+            <div class="d-flex justify-content-between mt-4">
+                
+                <button type="submit" class="btn btn-proveedor-submit btn-success">
+                    Guardar y Continuar <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </form>
     </div>
-</form>
+</div>
+
+
 
 @section Scripts {
     <script>
@@ -68,25 +85,38 @@
                     if (!input.value.trim()) {
                         isValid = false;
                         input.classList.add('is-invalid');
-
-                        // Agregar mensaje de error si no existe
-                        if (!input.nextElementSibling.classList.contains('text-danger')) {
-                            const errorMsg = document.createElement('small');
-                            errorMsg.className = 'text-danger';
-                            errorMsg.textContent = 'Este campo es obligatorio';
-                            input.parentNode.appendChild(errorMsg);
-                        }
                     }
                 });
 
                 if (!isValid) {
                     e.preventDefault();
 
+                    // Mostrar Toast de error
+                    const toast = document.createElement('div');
+                    toast.className = 'position-fixed bottom-0 end-0 p-3';
+                    toast.innerHTML = `
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header bg-danger text-white">
+                                <strong class="me-auto">Error</strong>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                Por favor complete todos los campos obligatorios.
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+
                     // Desplazarse al primer error
                     const firstInvalid = document.querySelector('.is-invalid');
                     if (firstInvalid) {
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
+
+                    // Eliminar el toast después de 5 segundos
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 5000);
                 }
             });
 
@@ -95,20 +125,9 @@
                 input.addEventListener('input', function() {
                     if (this.value.trim()) {
                         this.classList.remove('is-invalid');
-                        const errorMsg = this.nextElementSibling;
-                        if (errorMsg && errorMsg.classList.contains('text-danger')) {
-                            errorMsg.remove();
-                        }
                     }
                 });
             });
         });
     </script>
-
-    <style>
-        .is-invalid {
-            border-color: #dc3545;
-            background-color: #fff3f3;
-        }
-    </style>
 }

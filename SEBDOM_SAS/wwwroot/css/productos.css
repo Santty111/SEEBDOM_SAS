@@ -1,0 +1,205 @@
+﻿/* Estilos generales para la vista de productos */
+.productos-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.productos-header {
+    background-color: #343a40;
+    color: white;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+}
+
+.productos-card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.productos-table {
+    margin-bottom: 0;
+}
+
+    .productos-table thead {
+        background-color: #2c3e50;
+        color: white;
+    }
+
+    .productos-table th {
+        padding: 12px 15px;
+        font-weight: 500;
+    }
+
+    .productos-table td {
+        padding: 10px 15px;
+        vertical-align: middle;
+    }
+
+/* Estilos para los botones */
+.btn-productos {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+
+.btn-success {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+    .btn-success:hover {
+        background-color: #27ae60;
+        border-color: #27ae60;
+    }
+
+.btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+
+/* Estilos para los badges de stock */
+.stock-badge {
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+    /* Colores para diferentes niveles de stock */
+    .stock-badge[data-stock="0"] {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .stock-badge[data-stock^="-"] {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .stock-badge[data-stock]:not([data-stock="0"]):not([data-stock^="-"]) {
+        background-color: #2ecc71;
+        color: white;
+    }
+
+/* Estilos para los inputs */
+.form-control, .form-select {
+    border-radius: 4px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    transition: border-color 0.3s ease;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+    }
+
+/* Estilo especial para inputs de entrada */
+input[name="Entrada"] {
+    background-color: #e0f7fa !important;
+    border-color: #b2ebf2;
+}
+
+/* Estilo especial para inputs de salida */
+input[name="Salida"] {
+    background-color: #ffebee !important;
+    border-color: #ffcdd2;
+}
+
+/* Estilos para la alerta */
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    border-radius: 4px;
+}
+
+/* Estilo para el badge de conteo */
+.badge.bg-info {
+    background-color: #17a2b8 !important;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-radius: 20px;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .productos-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+
+
+
+.container-with-bg {
+    background-image: url('/images/pulpos-bg.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.productos-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Oculta solo el footer en la vista Index de Productos */
+body.productos-index footer {
+    display: none !important;
+}
+
+
+
+/* Fondo para vistas de Productos */
+.productos-bg {
+    background-color: #f8f9fa;
+    background-image: url('/images/pulpos-bg.png');
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-size: 150px;
+    min-height: 100vh;
+}
+
+    .productos-bg::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: -1;
+    }

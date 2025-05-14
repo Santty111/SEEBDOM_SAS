@@ -1,22 +1,32 @@
 ﻿@model List<DateTime>
-
 @{
     ViewData["Title"] = "Registros de Pulpo";
 }
 
-<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/pulpos.css" asp-append-version="true" />
 
-<a asp-action="Create" class="btn btn-primary mb-3">Nuevo Registro</a>
+<div class="pulpos-container">
+    <h1 class="pulpos-header">
+        <i class="fas fa-fish me-2"></i>@ViewData["Title"]
+    </h1>
 
-<div class="list-group">
-    @foreach (var fecha in Model)
-    {
-        <a asp-action="DetailsByDate" asp-route-fecha="@fecha.ToString("yyyy-MM-dd")"
-           class="list-group-item list-group-item-action">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">@fecha.ToString("dd/MM/yyyy")</h5>
-                <small>Click para ver detalles</small>
-            </div>
-        </a>
-    }
+    <a asp-action="Create" class="btn btn-pulpos btn-pulpos-primary mb-4">
+        <i class="fas fa-plus me-2"></i>Nuevo Registro
+    </a>
+
+    <div class="pulpos-list list-group">
+        @foreach (var fecha in Model)
+        {
+            <a asp-action="DetailsByDate" asp-route-fecha="@fecha.ToString("yyyy-MM-dd")"
+               class="pulpos-list-item list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <h5 class="mb-0 pulpos-date">
+                        <i class="far fa-calendar-alt me-2"></i>@fecha.ToString("dd/MM/yyyy")
+                    </h5>
+                    <small class="pulpos-hint">Click para ver detalles <i class="fas fa-chevron-right ms-1"></i></small>
+                </div>
+            </a>
+        }
+    </div>
 </div>
+

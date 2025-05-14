@@ -1,0 +1,62 @@
+﻿/* Estilos específicos para la vista Delete */
+.delete-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.delete-header {
+    color: #dc3545;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.delete-card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: white;
+    padding: 25px;
+}
+
+.delete-dl dt {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.delete-dl dd {
+    margin-bottom: 15px;
+}
+
+.delete-actions {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    padding: 8px 20px;
+    font-weight: 500;
+}
+
+    .btn-delete:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+
+.btn-cancel {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    padding: 8px 20px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }

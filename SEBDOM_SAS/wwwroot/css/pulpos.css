@@ -1,0 +1,295 @@
+﻿/* Estilos para la vista de registros de pulpo */
+.pulpos-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.pulpos-header {
+    color: #2c3e50;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+}
+
+.pulpos-list {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.pulpos-list-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    padding: 15px 20px;
+}
+
+    .pulpos-list-item:hover {
+        background-color: #e8f4fc;
+        border-left-color: #3498db;
+        transform: translateX(5px);
+    }
+
+.pulpos-date {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.pulpos-hint {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+}
+
+.btn-pulpos {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-pulpos-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+    .btn-pulpos-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .pulpos-list-item {
+        padding: 12px 15px;
+    }
+
+    .pulpos-date {
+        font-size: 1rem;
+    }
+}
+
+
+/* Estilos específicos para creación de registros */
+.pulpo-create-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+.pulpo-create-header {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.pulpo-form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.pulpo-form-control {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+    .pulpo-form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+.pulpo-checkbox-container {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+    .pulpo-checkbox-container:hover {
+        background-color: #f8f9fa;
+    }
+
+.pulpo-checkbox-label {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.btn-pulpo-continue {
+    background-color: #3498db;
+    border-color: #3498db;
+    padding: 10px 25px;
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+    .btn-pulpo-continue:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+
+
+
+/* Estilos para la vista de detalles de registro */
+.pulpo-details-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.pulpo-details-header {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.pulpo-card {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.pulpo-card-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 12px 20px;
+    font-weight: 500;
+}
+
+.pulpo-table {
+    margin-bottom: 0;
+}
+
+    .pulpo-table th {
+        background-color: #34495e;
+        color: white;
+        padding: 12px 15px;
+        font-weight: 500;
+    }
+
+    .pulpo-table td {
+        padding: 10px 15px;
+        vertical-align: middle;
+    }
+
+.pulpo-form-group {
+    margin-bottom: 15px;
+}
+
+.pulpo-form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.pulpo-form-control {
+    border-radius: 4px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+    .pulpo-form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+.btn-pulpo-action {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-pulpo-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+    .btn-pulpo-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+
+.btn-pulpo-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+    .btn-pulpo-danger:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+    }
+
+/* Estilos para campos editables */
+.editable {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+    .editable:hover {
+        background-color: #e8f4fc;
+    }
+
+    .editable input {
+        display: inline-block;
+        width: auto;
+        min-width: 80px;
+        border: 1px solid #3498db;
+    }
+
+/* Badges de estado personalizados */
+span.badge-disponible {
+    background-color: #28a745 !important;
+    color: white !important;
+    padding: 0.35em 0.65em;
+    border-radius: 50rem;
+    font-size: 0.85em;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+span.badge-no-disponible {
+    background-color: #dc3545 !important;
+    color: white !important;
+    padding: 0.35em 0.65em;
+    border-radius: 50rem;
+    font-size: 0.85em;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+    /* Iconos */
+    span.badge-disponible i,
+    span.badge-no-disponible i {
+        margin-right: 0.3rem;
+        font-size: 0.9em;
+    }
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .pulpo-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .pulpo-form-group {
+        margin-bottom: 10px;
+    }
+}
+
+
