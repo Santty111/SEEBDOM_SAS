@@ -1,0 +1,114 @@
+﻿@model SEBDOM_SAS.Models.RegistroPulpo
+
+@{
+    ViewData["Title"] = "Añadir Proveedores y Precios";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="AddProveedores" method="post" id="proveedoresForm">
+    <input type="hidden" name="registroId" value="@Model.Id" />
+
+    @foreach (var codigo in ViewBag.Codigos)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5>Código: @codigo</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label>Nombre del Proveedor *</label>
+                    <input type="text" name="proveedoresData[@codigo].Nombre" class="form-control" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Precio Normal</label>
+                            <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioNormal" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Precio Especial</label>
+                            <input type="number" step="0.01" name="proveedoresData[@codigo].PrecioEspecial" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Create" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Regresar a Nuevo Registro
+        </a>
+        <button type="submit" class="btn btn-success">
+            Guardar y Continuar <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('proveedoresForm');
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const nombreInputs = document.querySelectorAll('input[name*="Nombre"]');
+
+                // Resetear estilos primero
+                nombreInputs.forEach(input => {
+                    input.classList.remove('is-invalid');
+                });
+
+                // Validar cada campo Nombre
+                nombreInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+
+                        // Agregar mensaje de error si no existe
+                        if (!input.nextElementSibling.classList.contains('text-danger')) {
+                            const errorMsg = document.createElement('small');
+                            errorMsg.className = 'text-danger';
+                            errorMsg.textContent = 'Este campo es obligatorio';
+                            input.parentNode.appendChild(errorMsg);
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+
+                    // Desplazarse al primer error
+                    const firstInvalid = document.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            // Validación en tiempo real
+            document.querySelectorAll('input[name*="Nombre"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('is-invalid');
+                        const errorMsg = this.nextElementSibling;
+                        if (errorMsg && errorMsg.classList.contains('text-danger')) {
+                            errorMsg.remove();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .is-invalid {
+            border-color: #dc3545;
+            background-color: #fff3f3;
+        }
+    </style>
+}

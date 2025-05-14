@@ -1,0 +1,22 @@
+﻿@model List<DateTime>
+
+@{
+    ViewData["Title"] = "Registros de Pulpo";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<a asp-action="Create" class="btn btn-primary mb-3">Nuevo Registro</a>
+
+<div class="list-group">
+    @foreach (var fecha in Model)
+    {
+        <a asp-action="DetailsByDate" asp-route-fecha="@fecha.ToString("yyyy-MM-dd")"
+           class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">@fecha.ToString("dd/MM/yyyy")</h5>
+                <small>Click para ver detalles</small>
+            </div>
+        </a>
+    }
+</div>

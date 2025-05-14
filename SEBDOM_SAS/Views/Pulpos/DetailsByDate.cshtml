@@ -1,0 +1,44 @@
+﻿@model List<SEBDOM_SAS.Models.RegistroPulpo>
+
+@{
+    ViewData["Title"] = "Registros del " + ViewBag.FechaSeleccionada;
+    int contador = 1; // Añade esta línea
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="list-group">
+    @foreach (var registro in Model)
+    {
+        <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Registro #@(contador++)</h5> <!-- Usa el contador -->
+                <small>Códigos: @string.Join(", ", registro.CodigosLista)</small>
+            </div>
+            <p class="mb-1">Total Gavetas: @registro.Gavetas.Count</p>
+            <div class="mt-2">
+                <a asp-action="Details" asp-route-id="@registro.Id" class="btn btn-info btn-sm">Detalles</a>
+                <form asp-action="Delete" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@registro.Id" />
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('¿Estás seguro?')">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Volver al listado de fechas</a>
