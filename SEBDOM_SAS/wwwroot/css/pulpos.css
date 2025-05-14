@@ -293,3 +293,117 @@ span.badge-no-disponible {
 }
 
 
+/* Estilos para registros por fecha */
+.registros-fecha-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.registros-fecha-header {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.registro-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.registro-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.registro-header {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+}
+
+.registro-body {
+    padding: 15px 20px;
+}
+
+.registro-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.registro-meta {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.btn-registro {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-registro-details {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.btn-registro-details:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    color: white;
+}
+
+.btn-registro-delete {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: white;
+}
+
+.btn-registro-delete:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    color: white;
+}
+
+.btn-volver-fechas {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+    color: white;
+    padding: 8px 20px;
+    margin-top: 20px;
+}
+
+.btn-volver-fechas:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Alertas personalizadas */
+.alert-pulpos {
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
