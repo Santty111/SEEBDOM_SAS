@@ -131,19 +131,7 @@
             $('[data-toggle="tooltip"]').tooltip();
         });
 
-        function applyStockColorRules() {
-            document.querySelectorAll('.stock-badge').forEach(badge => {
-                const stock = parseFloat(badge.getAttribute('data-stock'));
-
-                if (stock <= 0) {
-                    badge.style.backgroundColor = '#e74c3c'; // Rojo para stock bajo/negativo
-                } else if (stock < 10) {
-                    badge.style.backgroundColor = '#f39c12'; // Naranja para stock bajo
-                } else {
-                    badge.style.backgroundColor = '#2ecc71'; // Verde para stock normal
-                }
-            });
-        }
+        
 
         document.addEventListener('DOMContentLoaded', function() {
             applyStockColorRules();
