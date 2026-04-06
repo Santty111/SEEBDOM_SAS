@@ -18,18 +18,18 @@
      Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
      .\setup.ps1
      ```
-4. Si se creó `.env` desde la plantilla, edítelo y defina un **`JWT_SECRET`** largo y aleatorio.
+4. Si se creó `.env` desde la plantilla, edítelo: **`MONGODB_URI`** (Atlas) y **`JWT_SECRET`** largo y aleatorio.
 5. Compruebe la API: en el navegador o con:
    ```powershell
    curl http://localhost:5000/health
    ```
 
-## 2. Volúmenes y rutas (Windows)
+## 2. Base de datos (MongoDB Atlas)
 
-El archivo `docker-compose.yml` usa un **volumen nombrado** (`sebdom_mongo_data`), no una carpeta del tipo `C:\datos\mongo:/data/db`.
+La API en Docker **no incluye** MongoDB: los datos están en **Atlas**. La cadena de conexión va en **`MONGODB_URI`** en el `.env` de la raíz del repo.
 
-- **Ventaja en Windows:** Docker Desktop guarda los datos dentro de su máquina virtual (WSL2 o Hyper-V). No hay que escapar rutas con `\`, ni permisos raros de NTFS en el montaje.
-- **Copias de seguridad:** use `docker run` / extensiones de Docker o exportaciones de Mongo según su política; si en el futuro necesita un bind mount explícito a `D:\MongoData`, documente la ruta y los permisos aparte.
+- **Copias de seguridad:** use las herramientas de backup de Atlas (M0 incluye snapshot básico según el plan).
+- Si en el pasado usó Mongo en Docker y quedó el volumen `sebdom_mongo_data`, puede eliminarlo con `docker volume rm sebdom_mongo_data` cuando ya no lo necesite.
 
 ## 3. Arranque automático tras iniciar sesión
 
@@ -46,7 +46,7 @@ Así, al encender la Torre e iniciar sesión, el motor Docker estará disponible
 
 ### B) Política `restart: unless-stopped` (ya configurada)
 
-Los servicios **mongo** y **backend** en `docker-compose.yml` usan `restart: unless-stopped`. Cuando el daemon de Docker vuelve a estar activo (por ejemplo tras un corte de luz y nuevo inicio de Windows), Docker intenta **volver a levantar** esos contenedores automáticamente, si no los detuvo usted con `docker compose down` o “Stop” explícito.
+El servicio **backend** en `docker-compose.yml` usa `restart: unless-stopped`. Cuando el daemon de Docker vuelve a estar activo (por ejemplo tras un corte de luz y nuevo inicio de Windows), Docker intenta **volver a levantar** ese contenedor automáticamente, si no lo detuvo usted con `docker compose down` o “Stop” explícito.
 
 ### C) Programador de tareas (opcional, refuerzo)
 

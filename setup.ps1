@@ -29,7 +29,7 @@ if (-not (Test-Path -LiteralPath $envFile)) {
   }
   Copy-Item -LiteralPath $example -Destination $envFile
   Write-Host '[INFO] Se creó .env desde .env.docker.example' -ForegroundColor Yellow
-  Write-Host '[AVISO] Edite .env y defina JWT_SECRET (valor largo y aleatorio).' -ForegroundColor Yellow
+  Write-Host '[AVISO] Edite .env: MONGODB_URI (Atlas) y JWT_SECRET (largo y aleatorio).' -ForegroundColor Yellow
 } else {
   Write-Host '[INFO] Ya existe .env (no se sobrescribe).'
 }
@@ -43,7 +43,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ''
 Write-Host '== Listo ==' -ForegroundColor Green
 Write-Host '  • API:     http://localhost:5000  (salud: /health)'
-Write-Host '  • MongoDB: solo red interna Docker; datos en volumen sebdom_mongo_data'
+Write-Host '  • MongoDB: MongoDB Atlas (MONGODB_URI en .env)'
 Write-Host ''
 Write-Host 'Comandos útiles:'
 Write-Host '  docker compose logs -f backend'

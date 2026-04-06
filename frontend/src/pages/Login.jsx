@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { SEED_TEST_PRESETS } from '../config/seedTestPresets.js';
 import { getApiErrorMessage } from '../utils/apiErrors.js';
 
 export default function Login() {
@@ -9,7 +10,9 @@ export default function Login() {
   const location = useLocation();
   const emailId = useId();
   const passwordId = useId();
+  const presetId = useId();
   const errorId = useId();
+  const showTestPresets = import.meta.env.DEV;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -61,6 +64,40 @@ export default function Login() {
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+            {showTestPresets ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-3">
+                <label htmlFor={presetId} className="block text-sm font-medium text-amber-900">
+                  Usuario de prueba
+                </label>
+                <p className="mt-0.5 text-xs text-amber-800/90">
+                  Solo visible en modo desarrollo. Ejecuta el seed del backend si aún no existen en la base.
+                </p>
+                <select
+                  id={presetId}
+                  name="testPreset"
+                  value=""
+                  onChange={(e) => {
+                    const key = e.target.value;
+                    const preset = SEED_TEST_PRESETS.find((p) => p.value === key);
+                    if (preset) {
+                      setEmail(preset.email);
+                      setPassword(preset.password);
+                      setError('');
+                    }
+                    e.target.value = '';
+                  }}
+                  className="mt-2 w-full rounded-lg border border-amber-300/80 bg-white px-3 py-2.5 text-base text-slate-900 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+                >
+                  <option value="">— Elegir para rellenar correo y contraseña —</option>
+                  {SEED_TEST_PRESETS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+
             <div>
               <label htmlFor={emailId} className="block text-sm font-medium text-slate-700">
                 Correo electrónico

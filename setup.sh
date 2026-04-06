@@ -23,7 +23,7 @@ if [ ! -f .env ]; then
   if [ -f .env.docker.example ]; then
     cp .env.docker.example .env
     echo "[INFO] Se creó .env desde .env.docker.example"
-    echo "[AVISO] Edite .env y defina JWT_SECRET con un valor largo y aleatorio antes de exponer el servicio."
+    echo "[AVISO] Edite .env: MONGODB_URI (Atlas) y JWT_SECRET antes de exponer el servicio."
   else
     echo "[ERROR] Falta .env.docker.example en la raíz del repositorio."
     exit 1
@@ -37,7 +37,7 @@ docker compose up -d --build
 
 echo ""
 echo "== Listo =="
-echo "  • MongoDB: contenedor 'sebdom-mongo' (datos en volumen Docker: sebdom_mongo_data)"
+echo "  • MongoDB: MongoDB Atlas (variable MONGODB_URI en .env)"
 echo "  • API:     http://localhost:5000  (health: http://localhost:5000/health)"
 echo ""
 echo "Comandos útiles:"

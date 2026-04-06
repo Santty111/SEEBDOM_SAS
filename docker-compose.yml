@@ -1,63 +1,14 @@
-# SEBDOM V2 — API + MongoDB (réplica de un nodo para soportar transacciones de inventario).
+# SEBDOM V2 — API en Docker; MongoDB en MongoDB Atlas (MONGODB_URI en .env).
 # Uso:
 #   Windows:  setup.bat  o  powershell -ExecutionPolicy Bypass -File .\setup.ps1
 #   Linux:    ./setup.sh
 #   Manual:   docker compose up -d --build
 #
-# Volúmenes: se usan volúmenes NOMBRADOS (mongo_data → sebdom_mongo_data), no rutas tipo C:\...
-# Docker Desktop en Windows los guarda en su disco virtual (WSL2/Hyper-V): sin problemas de
-# barras invertidas ni permisos NTFS en el bind mount. Evite cambiar a ./data:/data/db en
-# Windows salvo que necesite copias de seguridad en una carpeta explícita del host.
+# Mongo local en Docker ya no forma parte de este compose. Los datos viven en Atlas.
 
 name: sebdom-v2
 
 services:
-  mongo:
-    image: mongo:7.0
-    container_name: sebdom-mongo
-    restart: unless-stopped
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - sebdom-net
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
-  # Inicializa el replica set una vez (reintentos seguros si ya existe).
-  mongo-init:
-    image: mongo:7.0
-    container_name: sebdom-mongo-init
-    restart: "no"
-    depends_on:
-      mongo:
-        condition: service_healthy
-    networks:
-      - sebdom-net
-    entrypoint:
-      - bash
-      - -c
-      - |
-        set -e
-        mongosh "mongodb://mongo:27017" --eval '
-          try {
-            const st = rs.status();
-            if (st.ok !== 1) throw new Error("replica set no ok");
-            print("Replica set ya inicializado");
-          } catch (e) {
-            print("Inicializando replica set rs0...");
-            rs.initiate({
-              _id: "rs0",
-              members: [{ _id: 0, host: "mongo:27017" }]
-            });
-          }
-        '
-        sleep 3
-
   backend:
     build:
       context: ./backend
@@ -69,24 +20,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: "5000"
-      MONGODB_URI: mongodb://mongo:27017/sebdom?replicaSet=rs0
+      MONGODB_URI: ${MONGODB_URI:?Defina MONGODB_URI en .env (URI de MongoDB Atlas, ver README)}
       JWT_SECRET: ${JWT_SECRET:-definir_JWT_SECRET_en_archivo_env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       DISABLE_REGISTRATION: ${DISABLE_REGISTRATION:-false}
-    depends_on:
-      mongo:
-        condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
-    networks:
-      - sebdom-net
-
-networks:
-  sebdom-net:
-    driver: bridge
-
-volumes:
-  # Volumen nombrado (recomendado en Windows 11 + Docker Desktop)
-  mongo_data:
-    name: sebdom_mongo_data
