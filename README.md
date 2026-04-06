@@ -241,7 +241,7 @@ Los clústeres Atlas ya son **replica set**: las **transacciones** de inventario
 
 | Desde | URI |
 |-------|-----|
-| **Atlas** (backend en Docker con `.env`) | La que pegaste en `MONGODB_URI` (`mongodb+srv://...`) |
+| **Atlas** (backend en Docker con `.env`) | `MONGODB_URI` (`mongodb+srv://...`) |
 
 ---
 
