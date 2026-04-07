@@ -214,7 +214,7 @@ docker compose up -d --build
 ```
 
 - **API:** `http://localhost:5000` (salud: `/health`).
-- **MongoDB:** solo en **Atlas**; Compass y herramientas usan la misma URI `mongodb+srv://...` que en `.env`.
+- **MongoDB:** solo en **Atlas**; Compass y herramientas usan la **misma cadena de conexión** que pegaste en `MONGODB_URI` dentro de `.env`.
 - Tras un corte de luz: en Windows, depende de que **Docker Desktop** arranque con la sesión; luego aplica `unless-stopped` en `backend` y, si la configuró, la tarea programada.
 
 **Limpieza (opcional):** si antes usabas Mongo en Docker, puede quedar el volumen `sebdom_mongo_data` o contenedores viejos. Para liberar espacio: `docker rm -f sebdom-mongo sebdom-mongo-init 2>nul` y, si ya no lo necesita, `docker volume rm sebdom_mongo_data`.
@@ -229,19 +229,18 @@ El **frontend** no está en este Compose; puede seguir en Vite en desarrollo o s
    - **Database Access** → *Add New Database User* → usuario + contraseña fuerte → rol integrado **Read and write to any database** (o uno más restrictivo si Atlas lo permite para tu BD). No uses **Atlas Admin** para la aplicación. Guarda la contraseña (Atlas no la vuelve a mostrar).
    - **Network Access** → *Add IP Address* → para pruebas rápidas puedes usar **`0.0.0.0/0`** (cualquier IP; menos seguro). Mejor: tu IP pública actual o la IP del servidor donde correrá Docker.
 4. **Connect** en el clúster → **Drivers** → copia la cadena **URI** (Node.js). Sustituye `<password>` por la contraseña del usuario (si tiene caracteres especiales, [URL-encódificalos](https://www.mongodb.com/docs/atlas/troubleshoot-connection/#special-characters-in-connection-string-password)).
-5. Asegúrate de que el path de la base sea **`/sebdom`** (o el nombre que uses), p. ej.  
-   `mongodb+srv://USER:PASS@cluster0.xxxxx.mongodb.net/sebdom?retryWrites=true&w=majority`
-6. En la **raíz del repo**, edita tu `.env` y define **`MONGODB_URI=`** con esa URI completa en **una sola línea**.
+5. Asegúrate de que el path de la base sea **`/sebdom`** (o el nombre que uses). La cadena que entrega Atlas incluye host del clúster, usuario y parámetros (`retryWrites`, `w`, etc.); **cópiala tal cual** desde *Connect → Drivers* y no compartas esa cadena en issues ni commits.
+6. En la **raíz del repo**, edita tu `.env` y define **`MONGODB_URI=`** con esa URI completa en **una sola línea** (sin publicar el valor en el repositorio).
 7. Reinicia la API: `docker compose up -d --build`
 8. Vuelve a ejecutar el seed si la base Atlas está vacía (el contenedor debe poder salir a Internet):  
    `docker compose exec backend node scripts/seedTestUsers.js`
-9. **Compass** a la nube: usa la misma URI `mongodb+srv://...` (Atlas → Connect → Compass).
+9. **Compass** a la nube: usa la misma cadena que en `MONGODB_URI` (Atlas → Connect → Compass).
 
 Los clústeres Atlas ya son **replica set**: las **transacciones** de inventario del backend siguen siendo válidas.
 
 | Desde | URI |
 |-------|-----|
-| **Atlas** (backend en Docker con `.env`) | `MONGODB_URI` (`mongodb+srv://...`) |
+| **Atlas** (backend en Docker con `.env`) | Valor de `MONGODB_URI` (cadena de conexión del clúster) |
 
 ---
 
@@ -249,6 +248,7 @@ Los clústeres Atlas ya son **replica set**: las **transacciones** de inventario
 
 | Fecha | Cambio |
 |-------|--------|
+| 2026-04-06 | Documentación y `.env*.example`: sin URI de ejemplo tipo Atlas en el repo (evitar falsos positivos de secret scanning en GitHub). |
 | 2026-04-05 | Windows 11: `setup.ps1`, `setup.bat`, `docker-up.ps1`, `docs/DEPLOY-WINDOWS-11.md`; notas de volúmenes en `docker-compose.yml`. |
 | 2026-04-05 | Docker: `docker-compose.yml`, `backend/Dockerfile`, `.env.docker.example`, `setup.sh`; sección README “Docker (servidor local)”. |
 | 2026-04-05 | Frontend V2 documentado: Vite/React/Tailwind, rutas, env `VITE_API_URL`, estructura `frontend/src/`. |
