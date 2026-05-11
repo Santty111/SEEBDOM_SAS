@@ -72,7 +72,7 @@ export async function updateProductName(req, res, next) {
  */
 export async function updateInventory(req, res, next) {
   try {
-    const { unidadMedida, entrada, salida } = req.body;
+    const { unidadMedida, entrada, salida, costoBase, ubicacion } = req.body;
     if (unidadMedida == null) {
       throw new AppError('unidadMedida es obligatorio', 400, 'VALIDATION');
     }
@@ -81,6 +81,8 @@ export async function updateInventory(req, res, next) {
       unidadMedida,
       entrada,
       salida,
+      costoBase,
+      ubicacion,
     });
 
     if (!result.ok) {

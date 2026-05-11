@@ -29,7 +29,10 @@ export function useInventory() {
           ? { entrada: payload.entrada }
           : {}),
         ...(payload.salida != null && payload.salida > 0
-          ? { salida: payload.salida }
+          ? { salida: payload.salida, ubicacion: payload.ubicacion, costoBase: payload.costoBase }
+          : {}),
+        ...(payload.costoBase != null && payload.entrada != null
+          ? { costoBase: payload.costoBase }
           : {}),
       };
       const product = await updateInventory(productId, body);

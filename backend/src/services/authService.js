@@ -62,11 +62,14 @@ export async function loginUser(input) {
   }
 
   const user = await User.findOne({ email }).select('+password');
+  console.log('Intento de login para:', email);
   if (!user) {
+    console.log('Usuario no encontrado en la DB');
     throw new AppError('Credenciales inválidas', 401, 'UNAUTHORIZED');
   }
 
   const match = await bcrypt.compare(password, user.password);
+  console.log('¿Password coincide?:', match);
   if (!match) {
     throw new AppError('Credenciales inválidas', 401, 'UNAUTHORIZED');
   }

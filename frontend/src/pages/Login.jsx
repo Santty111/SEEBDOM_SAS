@@ -5,7 +5,7 @@ import { SEED_TEST_PRESETS } from '../config/seedTestPresets.js';
 import { getApiErrorMessage } from '../utils/apiErrors.js';
 
 export default function Login() {
-  const { login, isAuthenticated, initializing } = useAuth();
+  const { login, isAuthenticated, initializing, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const emailId = useId();
@@ -19,21 +19,23 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const from = location.state?.from || '/dashboard';
-
   useEffect(() => {
     if (!initializing && isAuthenticated) {
-      navigate(from, { replace: true });
+      const defaultPath = user?.role === 'admin' ? '/dashboard' : '/productos';
+      const target = location.state?.from || defaultPath;
+      navigate(target, { replace: true });
     }
-  }, [initializing, isAuthenticated, from, navigate]);
+  }, [initializing, isAuthenticated, navigate, user, location.state]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      const { user: loggedUser } = await login(email, password);
+      const defaultPath = loggedUser?.role === 'admin' ? '/dashboard' : '/productos';
+      const target = location.state?.from || defaultPath;
+      navigate(target, { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {

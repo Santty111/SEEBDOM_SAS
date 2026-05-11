@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, 'El nombre del producto es obligatorio'],
       trim: true,
+      unique: true,
       maxlength: [500, 'El nombre es demasiado largo'],
     },
     stockActual: {
@@ -32,6 +33,16 @@ const productSchema = new mongoose.Schema(
         message: '{VALUE} no es una unidad de medida válida',
       },
       default: UnidadMedida.Kilogramos,
+    },
+    costoBase: {
+      type: Number,
+      required: [true, 'El costo base es obligatorio'],
+      min: [0.01, 'El costo base debe ser mayor a cero'],
+    },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'La categoría es obligatoria'],
     },
   },
   {

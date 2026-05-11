@@ -28,3 +28,18 @@ export function requireAuth(req, _res, next) {
     return next(new AppError('Token inválido o expirado', 401, 'INVALID_TOKEN'));
   }
 }
+
+/**
+ * Restringe acceso a roles específicos.
+ * Debe usarse DESPUÉS de requireAuth.
+ */
+export function restrictTo(...allowedRoles) {
+  return (req, _res, next) => {
+    if (!allowedRoles.includes(req.auth.role)) {
+      return next(
+        new AppError('No tienes permiso para realizar esta acción', 403, 'FORBIDDEN')
+      );
+    }
+    next();
+  };
+}

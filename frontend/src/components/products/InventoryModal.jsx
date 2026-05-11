@@ -20,11 +20,15 @@ export function InventoryModal({ open, product, mode, onClose, onSaved }) {
 
   const [unidad, setUnidad] = useState('Kilogramos');
   const [cantidad, setCantidad] = useState('');
+  const [costoBase, setCostoBase] = useState('');
+  const [ubicacion, setUbicacion] = useState('');
 
   useEffect(() => {
     if (open && product) {
       setUnidad(product.unidadMedida || 'Kilogramos');
       setCantidad('');
+      setCostoBase(product.costoBase || '');
+      setUbicacion('');
       clearError();
     }
   }, [open, product, clearError]);
@@ -57,6 +61,8 @@ export function InventoryModal({ open, product, mode, onClose, onSaved }) {
         unidadMedida: unidad,
         entrada: mode === 'entrada' ? n : null,
         salida: mode === 'salida' ? n : null,
+        costoBase: mode === 'entrada' ? Number(costoBase) : undefined,
+        ubicacion: mode === 'salida' ? ubicacion : undefined,
       });
       onSaved(updated);
       onClose();
@@ -134,6 +140,45 @@ export function InventoryModal({ open, product, mode, onClose, onSaved }) {
               aria-describedby={error ? errId : undefined}
             />
           </div>
+
+          {mode === 'entrada' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Precio Base (Costo)</label>
+              <div className="relative mt-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 font-medium">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={costoBase}
+                  onChange={(e) => setCostoBase(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 pl-8 pr-3 py-2 text-base"
+                />
+              </div>
+            </div>
+          )}
+
+          {mode === 'salida' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Ubicación / Cliente</label>
+                <input
+                  type="text"
+                  required
+                  value={ubicacion}
+                  onChange={(e) => setUbicacion(e.target.value)}
+                  placeholder="Ej. Restaurante Central"
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
+                />
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                <span className="text-sm font-medium text-slate-700">Precio Calculado:</span>
+                <span className="text-lg font-bold text-brand-700">
+                  ${(Number(cantidad.replace(',', '.')) || 0) * (Number(product.costoBase) || 0)}
+                </span>
+              </div>
+            </>
+          )}
 
           {error ? (
             <p id={errId} role="alert" className="text-sm text-red-700">

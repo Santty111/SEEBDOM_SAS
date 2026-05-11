@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Menu, Package, X } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, Package, Shield, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const linkClass =
@@ -35,17 +35,19 @@ export function Navbar() {
           className={`${open ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col gap-1 border-b border-slate-200 bg-white px-4 py-3 shadow-md md:static md:flex md:flex-row md:items-center md:border-0 md:bg-transparent md:p-0 md:shadow-none`}
           aria-label="Principal"
         >
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `${linkClass} flex items-center gap-2 ${isActive ? activeClass : ''}`
-            }
-            onClick={closeMenu}
-            end
-          >
-            <LayoutDashboard className="h-4 w-4 shrink-0" aria-hidden />
-            Panel
-          </NavLink>
+          {user?.role === 'admin' && (
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `${linkClass} flex items-center gap-2 ${isActive ? activeClass : ''}`
+              }
+              onClick={closeMenu}
+              end
+            >
+              <Shield className="h-4 w-4 shrink-0" aria-hidden />
+              Administración
+            </NavLink>
+          )}
           <NavLink
             to="/productos"
             className={({ isActive }) =>

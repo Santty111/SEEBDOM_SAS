@@ -114,14 +114,32 @@ export class ProductService {
   }
 
   /**
-   * Alta: solo nombre; stock 0 y unidad Kg (ProductosController.Create).
-   * @param {{ nombreProducto: string }} payload
+   * Alta: nombre, stock 0, unidad Kg, categoryId y costoBase.
+   * @param {{ nombreProducto: string, categoryId: string, costoBase: number }} payload
    */
   async createProduct(payload) {
+    const cleanName = payload.nombreProducto.trim();
+    // Case-insensitive check (BACKEND VALIDATION FOR SENSITIVE DATA)
+    const existing = await this._Product.findOne({
+      nombreProducto: { $regex: new RegExp(`^${cleanName}$`, 'i') }
+    }).lean().exec();
+    
+    if (existing) {
+      const { AppError } = await import('../utils/AppError.js');
+      throw new AppError('El producto ya existe con este nombre', 409, 'DUPLICATE_PRODUCT');
+    }
+
+    if (!payload.categoryId) {
+      const { AppError } = await import('../utils/AppError.js');
+      throw new AppError('La categoría es obligatoria', 400, 'MISSING_CATEGORY');
+    }
+
     const doc = await this._Product.create({
-      nombreProducto: payload.nombreProducto.trim(),
+      nombreProducto: cleanName,
       stockActual: 0,
       unidadMedida: UnidadMedida.Kilogramos,
+      costoBase: payload.costoBase || 1,
+      categoryId: payload.categoryId
     });
     return doc.toJSON();
   }
@@ -135,9 +153,21 @@ export class ProductService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return { ok: false, code: 'NOT_FOUND' };
     }
+    
+    const cleanName = payload.nombreProducto.trim();
+    const existing = await this._Product.findOne({
+      _id: { $ne: id },
+      nombreProducto: { $regex: new RegExp(`^${cleanName}$`, 'i') }
+    }).lean().exec();
+
+    if (existing) {
+      const { AppError } = await import('../utils/AppError.js');
+      throw new AppError('Ya existe otro producto con este nombre', 409, 'DUPLICATE_PRODUCT');
+    }
+
     const updated = await this._Product.findByIdAndUpdate(
       id,
-      { nombreProducto: payload.nombreProducto.trim() },
+      { nombreProducto: cleanName },
       { new: true, runValidators: true }
     )
       .lean()
@@ -174,6 +204,8 @@ export class ProductService {
    *   unidadMedida: string;
    *   entrada?: number | null;
    *   salida?: number | null;
+   *   costoBase?: number | null;
+   *   ubicacion?: string;
    * }} dto
    */
   async applyInventoryUpdate(productId, dto) {
@@ -214,6 +246,9 @@ export class ProductService {
       producto.unidadMedida = dto.unidadMedida;
 
       if (entrada != null) {
+        if (dto.costoBase != null && dto.costoBase > 0) {
+          producto.costoBase = dto.costoBase;
+        }
         producto.stockActual += entrada;
         movimientosHistorial.push(
           entradaHistorialMovimiento(
@@ -247,9 +282,22 @@ export class ProductService {
             salida,
             stockAnteriorGlobal,
             producto.stockActual,
-            'Registro de salida'
+            'Registro de salida (Enviado a distribución)'
           )
         );
+
+        // Crear alerta de salida (Pedido en estado Pendiente) para Distribución
+        const { default: Order } = await import('../models/Order.js');
+        const valorCalculado = salida * (producto.costoBase || 0);
+        await Order.create([{
+          ubicacion: dto.ubicacion || 'Retiro / Mostrador',
+          urgencia: 'Media',
+          estado: 'Pendiente',
+          fechaPedido: new Date(),
+          detalles: [{ productoId: producto._id, cantidad: salida }],
+          valorTotal: valorCalculado,
+          costoTotal: 0
+        }], { session });
       }
 
       if (this._Historial != null && movimientosHistorial.length > 0) {
