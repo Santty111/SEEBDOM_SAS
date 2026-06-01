@@ -1,6 +1,7 @@
 import express from 'express';
 import adminController from '../controllers/adminController.js';
 import adminDashboardController from '../controllers/adminDashboardController.js';
+import prediccionController from '../controllers/prediccionController.js';
 import { requireAuth, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -21,6 +22,8 @@ router.get('/dashboard/comparativa', adminDashboardController.getSeasonalCompari
 router.patch('/dashboard/despacho/:orderId', adminDashboardController.dispatchOrder);
 router.get('/dashboard/abastecimiento', adminDashboardController.getSupplies); // NUEVO
 router.post('/dashboard/abastecimiento', adminDashboardController.createSupply); // NUEVO
+router.post('/dashboard/predicciones/calcular', prediccionController.calcularCruce); // NUEVO
+router.get('/dashboard/predicciones/comparar', prediccionController.obtenerComparacion); // NUEVO
 
 // Rutas para Requerimiento 2: Dropdowns Dependientes
 router.get('/categorias', adminController.getCategories);

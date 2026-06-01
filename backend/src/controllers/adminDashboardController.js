@@ -3,6 +3,7 @@ import Product from '../models/Product.js';
 import Season from '../models/Season.js';
 import Lote from '../models/Lote.js';
 import Supply from '../models/Supply.js';
+import CurrentMovement from '../models/CurrentMovement.js';
 
 const adminDashboardController = {
   
@@ -162,11 +163,33 @@ const adminDashboardController = {
     try {
       const { orderId } = req.params;
       const { costoOperativo = 0 } = req.body;
-      const order = await Order.findByIdAndUpdate(orderId, { 
-        estado: 'Despachado',
-        fechaDespacho: new Date(),
-        costoTotal: Number(costoOperativo)
-      }, { new: true });
+
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+      }
+
+      order.estado = 'Despachado';
+      order.fechaDespacho = new Date();
+      order.costoTotal = Number(costoOperativo);
+      await order.save();
+
+      // TRIGGER/VINCULACIÓN: Por cada producto en el pedido, guardar salida en current_movements si es en 2026
+      if (order.fechaDespacho.getFullYear() === 2026) {
+        for (const item of order.detalles) {
+          const prod = await Product.findById(item.productoId);
+          await CurrentMovement.create({
+            productoId: item.productoId,
+            nombreProducto: prod ? prod.nombreProducto : 'Producto Desconocido',
+            fecha: order.fechaDespacho,
+            tipo: 'Salida',
+            cantidad: item.cantidad,
+            origen: 'Despacho',
+            referenciaId: order._id
+          });
+        }
+      }
+
       res.json({ success: true, data: order });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });

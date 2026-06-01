@@ -1,6 +1,7 @@
 import Lote from '../models/Lote.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
+import CurrentMovement from '../models/CurrentMovement.js';
 
 /**
  * Controller for Admin Panel - Core Comparativo y de Distribución
@@ -32,6 +33,20 @@ const adminController = {
         productoId,
         cantidad
       });
+
+      // TRIGGER/VINCULACIÓN: Si la fecha pertenece al año 2026, registrar entrada en current_movements
+      if (fechaIngresada.getFullYear() === 2026) {
+        const prod = await Product.findById(productoId);
+        await CurrentMovement.create({
+          productoId,
+          nombreProducto: prod ? prod.nombreProducto : 'Producto Desconocido',
+          fecha: fechaIngresada,
+          tipo: 'Entrada',
+          cantidad,
+          origen: 'Lote',
+          referenciaId: nuevoLote._id
+        });
+      }
 
       res.status(201).json({
         success: true,

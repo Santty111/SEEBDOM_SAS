@@ -4,7 +4,6 @@ import { fetchProducts } from '../services/productApi.js';
 import { 
   Truck, 
   AlertTriangle, 
-  BarChart3, 
   Calendar, 
   MapPin, 
   DollarSign, 
@@ -16,19 +15,20 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('comparativa');
+  const [activeTab, setActiveTab] = useState('cruce');
   const [orders, setOrders] = useState([]);
   const [alerts, setAlerts] = useState([]);
-  const [comparison, setComparison] = useState([]);
   const [products, setProducts] = useState([]);
   const [supplies, setSupplies] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Variables de comparación anual
-  const [yearA, setYearA] = useState('2024');
-  const [yearB, setYearB] = useState('2025');
-  const [comparisonA, setComparisonA] = useState([]);
-  const [comparisonB, setComparisonB] = useState([]);
+
+  // Cruce Manual y Proyecciones (Sin Fórmulas)
+  const [yearBase, setYearBase] = useState('2024');
+  const [yearObjetivo, setYearObjetivo] = useState('2026');
+  const [comparisonGrid, setComparisonGrid] = useState([]);
+  const [calculatingCruce, setCalculatingCruce] = useState(false);
+  const [selectedProductFilter, setSelectedProductFilter] = useState('Todos');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState('Todos');
 
   // States for manual creation forms
   const [newOrderLoc, setNewOrderLoc] = useState('');
@@ -49,23 +49,60 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [yearA, yearB]);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'cruce') {
+      fetchComparisonGrid();
+    }
+  }, [yearBase, yearObjetivo, activeTab]);
+
+  const fetchComparisonGrid = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/dashboard/predicciones/comparar?yearBase=${yearBase}&yearObjetivo=${yearObjetivo}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setComparisonGrid(data.data || []);
+      }
+    } catch (err) {
+      console.error('Error al cargar cuadrícula comparativa', err);
+    }
+  };
+
+  const handleRunCruce = async () => {
+    setCalculatingCruce(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/admin/dashboard/predicciones/calcular', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}`
+        },
+        body: JSON.stringify({ yearBase, yearObjetivo })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al ejecutar cruce manual');
+      alert(data.message);
+      fetchComparisonGrid();
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setCalculatingCruce(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
       // Usamos Promise.all para cargar todo en paralelo (Senior practice)
-      const [distRes, alertRes, compARes, compBRes, supplyRes, productsRes] = await Promise.all([
+      const [distRes, alertRes, supplyRes, productsRes] = await Promise.all([
         fetch('http://localhost:5000/api/admin/dashboard/distribucion', {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
         }).then(res => res.json()),
         fetch('http://localhost:5000/api/admin/dashboard/alertas', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
-        }).then(res => res.json()),
-        fetch(`http://localhost:5000/api/admin/dashboard/comparativa?year=${yearA}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
-        }).then(res => res.json()),
-        fetch(`http://localhost:5000/api/admin/dashboard/comparativa?year=${yearB}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
         }).then(res => res.json()),
         fetch('http://localhost:5000/api/admin/dashboard/abastecimiento', {
@@ -76,8 +113,6 @@ const AdminDashboard = () => {
 
       setOrders(distRes.data || []);
       setAlerts(alertRes.data || []);
-      setComparisonA(compARes.data || []);
-      setComparisonB(compBRes.data || []);
       setSupplies(supplyRes.data || []);
       setProducts(Array.isArray(productsRes) ? productsRes : []);
     } catch (err) {
@@ -160,24 +195,7 @@ const AdminDashboard = () => {
     return colors[urgency] || colors['Media'];
   };
 
-  // Helper para agrupar comparativas por temporada
-  const getSeasonStats = (compData) => {
-    const seasons = {};
-    compData.forEach(item => {
-      if (!seasons[item.temporada]) {
-        seasons[item.temporada] = { ingresos: 0, costos: 0, rentabilidad: 0, despachos: 0 };
-      }
-      seasons[item.temporada].ingresos += item.ingresos;
-      seasons[item.temporada].costos += item.costos;
-      seasons[item.temporada].rentabilidad += item.rentabilidad;
-      seasons[item.temporada].despachos += item.despachos;
-    });
-    return seasons;
-  };
 
-  const seasonStatsA = getSeasonStats(comparisonA);
-  const seasonStatsB = getSeasonStats(comparisonB);
-  const allSeasons = Array.from(new Set([...Object.keys(seasonStatsA), ...Object.keys(seasonStatsB)]));
 
   if (loading) return (
     <div className="flex min-h-[50vh] items-center justify-center text-slate-600">
@@ -208,7 +226,7 @@ const AdminDashboard = () => {
       <nav className="flex flex-wrap gap-2 mb-8 bg-slate-50/50 p-1.5 rounded-xl border border-slate-200 w-fit">
         {[
           { id: 'resumen', label: 'Resumen General', icon: Boxes },
-          { id: 'comparativa', label: 'Comparativa Core', icon: BarChart3 },
+          { id: 'cruce', label: 'Cruce & Proyecciones', icon: Scale },
           { id: 'distribucion', label: 'Distribución & Despacho', icon: Truck },
           { id: 'stock', label: 'Alertas de Stock', icon: AlertTriangle },
         ].map(tab => (
@@ -259,124 +277,7 @@ const AdminDashboard = () => {
           </section>
         )}
 
-        {/* MÓDULO 1: COMPARATIVA POR MESES (RENTABILIDAD DE DESPACHOS) */}
-        {activeTab === 'comparativa' && (
-          <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm relative">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 relative z-10 gap-4">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <BarChart3 className="text-brand-600" /> Comparativa Interanual por Temporadas
-                </h2>
-                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Año 1</span>
-                    <select 
-                      className="px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
-                      value={yearA} onChange={(e) => setYearA(e.target.value)}
-                    >
-                      <option value="2024">2024</option>
-                      <option value="2025">2025</option>
-                      <option value="2026">2026</option>
-                    </select>
-                  </div>
-                  <span className="text-slate-300 font-bold">vs</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Año 2</span>
-                    <select 
-                      className="px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-brand-50 font-bold text-brand-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500 border-brand-200"
-                      value={yearB} onChange={(e) => setYearB(e.target.value)}
-                    >
-                      <option value="2024">2024</option>
-                      <option value="2025">2025</option>
-                      <option value="2026">2026</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
 
-              {/* Tarjetas de Resumen por Temporada (Side-by-side) */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-                {allSeasons.map((season, idx) => {
-                  const statA = seasonStatsA[season] || { ingresos: 0, costos: 0, rentabilidad: 0, despachos: 0 };
-                  const statB = seasonStatsB[season] || { ingresos: 0, costos: 0, rentabilidad: 0, despachos: 0 };
-                  
-                  const margenA = statA.ingresos > 0 ? ((statA.rentabilidad / statA.ingresos) * 100).toFixed(1) : 0;
-                  const margenB = statB.ingresos > 0 ? ((statB.rentabilidad / statB.ingresos) * 100).toFixed(1) : 0;
-
-                  return (
-                    <article key={idx} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                      <div className="bg-slate-100 px-6 py-3 border-b border-slate-200 flex items-center gap-2">
-                        <Calendar size={18} className="text-brand-500" />
-                        <h3 className="font-bold text-slate-800 uppercase tracking-wide">{season}</h3>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 divide-x divide-slate-200">
-                        {/* Columna Año A */}
-                        <div className="p-5">
-                          <h4 className="text-center font-bold text-slate-500 mb-4 bg-white border border-slate-200 py-1 rounded-md shadow-sm">
-                            {yearA} <span className="text-xs font-normal ml-1">({statA.despachos} despachos)</span>
-                          </h4>
-                          <div className="space-y-3 text-sm">
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Ingresos Brutos</span>
-                              <span className="font-semibold text-slate-900">${statA.ingresos.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Costos Operativos</span>
-                              <span className="font-semibold text-red-600">-${statA.costos.toLocaleString()}</span>
-                            </div>
-                            <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                              <span className="font-bold text-slate-700">Rentabilidad</span>
-                              <span className="font-bold text-emerald-600">${statA.rentabilidad.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-white px-2 py-1 rounded border border-slate-100">
-                              <span className="text-xs text-slate-500 font-medium">Margen</span>
-                              <span className={`font-bold ${margenA >= 30 ? 'text-emerald-600' : margenA > 0 ? 'text-yellow-600' : 'text-slate-400'}`}>
-                                {margenA}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Columna Año B */}
-                        <div className="p-5 bg-brand-50/30">
-                          <h4 className="text-center font-bold text-brand-700 mb-4 bg-white border border-brand-100 py-1 rounded-md shadow-sm">
-                            {yearB} <span className="text-xs font-normal ml-1">({statB.despachos} despachos)</span>
-                          </h4>
-                          <div className="space-y-3 text-sm">
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Ingresos Brutos</span>
-                              <span className="font-semibold text-slate-900">${statB.ingresos.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Costos Operativos</span>
-                              <span className="font-semibold text-red-600">-${statB.costos.toLocaleString()}</span>
-                            </div>
-                            <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                              <span className="font-bold text-slate-700">Rentabilidad</span>
-                              <span className="font-bold text-emerald-600">${statB.rentabilidad.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-white px-2 py-1 rounded border border-brand-100 shadow-sm">
-                              <span className="text-xs text-slate-500 font-medium">Margen</span>
-                              <span className={`font-bold ${margenB >= 30 ? 'text-emerald-600' : margenB > 0 ? 'text-yellow-600' : 'text-slate-400'}`}>
-                                {margenB}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-                {allSeasons.length === 0 && (
-                  <div className="col-span-full py-12 text-center text-slate-500 italic">
-                    No hay despachos registrados para las temporadas de estos años.
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* MÓDULO 2: DISTRIBUCIÓN & DESPACHO */}
         {activeTab === 'distribucion' && (
@@ -573,6 +474,178 @@ const AdminDashboard = () => {
                 <p className="text-emerald-600 mt-2">No se han detectado productos con stock bajo el umbral crítico.</p>
               </div>
             )}
+          </section>
+        )}
+
+        {/* MÓDULO 4: CRUCE & PROYECCIONES */}
+        {activeTab === 'cruce' && (
+          <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 pb-5">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Scale className="text-brand-600" /> Cruce Manual de Datos y Proyecciones
+                  </h2>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Cruce de persistencia de datos entre <strong>Tabla 1 (Histórico)</strong>, <strong>Tabla 2 (Bodega Actual 2026)</strong> y <strong>Tabla 3 (Predicciones Copiadas)</strong>.
+                  </p>
+                </div>
+                
+                {/* Selectores Manuales y Controladores */}
+                <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 w-full md:w-auto">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Año Base:</span>
+                    <select
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
+                      value={yearBase}
+                      onChange={(e) => setYearBase(e.target.value)}
+                    >
+                      <option value="2024">2024 (Tabla 1)</option>
+                      <option value="2025">2025 (Tabla 1)</option>
+                      <option value="2026">2026 (Tabla 2)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="text-slate-300 font-bold">➔</div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Año Objetivo:</span>
+                    <select
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
+                      value={yearObjetivo}
+                      onChange={(e) => setYearObjetivo(e.target.value)}
+                    >
+                      <option value="2026">2026 (Tabla 3)</option>
+                      <option value="2027">2027 (Tabla 3)</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleRunCruce}
+                    disabled={calculatingCruce}
+                    className="ml-auto md:ml-0 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-75 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {calculatingCruce ? 'Copiando...' : 'Ejecutar Cruce Manual'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Barra de Selección de Producto y Mes */}
+              <div className="flex flex-wrap items-center gap-6 bg-slate-100/50 p-4 rounded-xl border border-slate-200/80 mb-6 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Selección de Producto:</span>
+                  <select
+                    className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white text-slate-700 font-medium outline-none shadow-sm focus:ring-2 focus:ring-brand-500 transition-all hover:border-slate-400"
+                    value={selectedProductFilter}
+                    onChange={(e) => setSelectedProductFilter(e.target.value)}
+                  >
+                    <option value="Todos">Todos los Productos</option>
+                    {products.map((p, idx) => (
+                      <option key={p.id || p._id || idx} value={p.nombreProducto}>{p.nombreProducto}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Selección de Mes:</span>
+                  <select
+                    className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white text-slate-700 font-medium outline-none shadow-sm focus:ring-2 focus:ring-brand-500 transition-all hover:border-slate-400"
+                    value={selectedMonthFilter}
+                    onChange={(e) => setSelectedMonthFilter(e.target.value)}
+                  >
+                    <option value="Todos">Todos los Meses</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Grid / Tabla Comparativa */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase bg-slate-50">
+                      <th className="py-3 px-4">Producto</th>
+                      <th className="py-3 px-4">Mes</th>
+                      <th className="py-3 px-4">Temporada</th>
+                      <th className="py-3 px-4 text-center">Año Base ({yearBase})</th>
+                      <th className="py-3 px-4 text-center">Año Objetivo ({yearObjetivo})</th>
+                      <th className="py-3 px-4 text-center">Procedencia y Cierre</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {comparisonGrid
+                      .filter(item => selectedProductFilter === 'Todos' || item.nombreProducto === selectedProductFilter)
+                      .filter(item => selectedMonthFilter === 'Todos' || item.month === Number(selectedMonthFilter))
+                      .map((item, idx) => {
+                      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                      
+                      const isBlocked = item.objetivo.status === 'Bloqueado';
+                      
+                      return (
+                        <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBlocked ? 'bg-slate-50/50 text-slate-400' : ''}`}>
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{item.nombreProducto}</td>
+                          <td className="py-3.5 px-4">{meses[item.month - 1]}</td>
+                          <td className="py-3.5 px-4">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-100">
+                              {item.temporada}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="font-medium text-slate-700">
+                              📥 {item.base.entradas.toLocaleString()} kg / 📤 {item.base.salidas.toLocaleString()} kg
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.base.origen}</div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {isBlocked ? (
+                              <div className="italic text-rose-500 font-semibold">
+                                Bloqueado (Sin Base)
+                              </div>
+                            ) : (
+                              <div className="font-bold text-brand-600">
+                                📥 {item.objetivo.entradas.toLocaleString()} kg / 📤 {item.objetivo.salidas.toLocaleString()} kg
+                              </div>
+                            )}
+                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.objetivo.origen}</div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {isBlocked ? (
+                              <span className="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-1 rounded text-xs font-bold">
+                                Bloqueo Faltante
+                              </span>
+                            ) : (
+                              <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded text-xs font-bold">
+                                Activo
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {comparisonGrid
+                      .filter(item => selectedProductFilter === 'Todos' || item.nombreProducto === selectedProductFilter)
+                      .filter(item => selectedMonthFilter === 'Todos' || item.month === Number(selectedMonthFilter)).length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="py-12 text-center text-slate-500 italic">
+                          No hay datos correspondientes a los filtros de producto y mes seleccionados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         )}
 
