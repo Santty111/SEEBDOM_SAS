@@ -494,29 +494,28 @@ const AdminDashboard = () => {
                 {/* Selectores Manuales y Controladores */}
                 <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 w-full md:w-auto">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Año Base:</span>
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Tabla 1: Histórico</span>
                     <select
                       className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
                       value={yearBase}
                       onChange={(e) => setYearBase(e.target.value)}
                     >
-                      <option value="2024">2024 (Tabla 1)</option>
-                      <option value="2025">2025 (Tabla 1)</option>
-                      <option value="2026">2026 (Tabla 2)</option>
+                      <option value="2024">2024 (T1)</option>
+                      <option value="2025">2025 (T1)</option>
                     </select>
                   </div>
                   
                   <div className="text-slate-300 font-bold">➔</div>
-
+ 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Año Objetivo:</span>
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Tabla 3: Proyección</span>
                     <select
                       className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
                       value={yearObjetivo}
                       onChange={(e) => setYearObjetivo(e.target.value)}
                     >
-                      <option value="2026">2026 (Tabla 3)</option>
-                      <option value="2027">2027 (Tabla 3)</option>
+                      <option value="2026">2026 (T3)</option>
+                      <option value="2027">2027 (T3)</option>
                     </select>
                   </div>
 
@@ -578,8 +577,8 @@ const AdminDashboard = () => {
                       <th className="py-3 px-4">Producto</th>
                       <th className="py-3 px-4">Mes</th>
                       <th className="py-3 px-4">Temporada</th>
-                      <th className="py-3 px-4 text-center">Año Base ({yearBase})</th>
-                      <th className="py-3 px-4 text-center">Año Objetivo ({yearObjetivo})</th>
+                      <th className="py-3 px-4 text-center bg-blue-50/50 border-x border-slate-200/50">Tabla 1: Histórico ({yearBase})</th>
+                      <th className="py-3 px-4 text-center bg-purple-50/30 border-r border-slate-200/50">Tabla 3: Proyección ({yearObjetivo})</th>
                       <th className="py-3 px-4 text-center">Procedencia y Cierre</th>
                     </tr>
                   </thead>
@@ -590,35 +589,38 @@ const AdminDashboard = () => {
                       .map((item, idx) => {
                       const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
                       
-                      const isBlocked = item.objetivo.status === 'Bloqueado';
+                      const isBlocked = item.tabla3.status === 'Bloqueado';
                       
                       return (
                         <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBlocked ? 'bg-slate-50/50 text-slate-400' : ''}`}>
                           <td className="py-3.5 px-4 font-semibold text-slate-900">{item.nombreProducto}</td>
                           <td className="py-3.5 px-4">{meses[item.month - 1]}</td>
                           <td className="py-3.5 px-4">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-100">
-                              {item.temporada}
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                               {item.temporada}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-center">
+                          {/* Columna Tabla 1 */}
+                          <td className="py-3.5 px-4 text-center bg-blue-50/20 border-x border-slate-100">
                             <div className="font-medium text-slate-700">
-                              📥 {item.base.entradas.toLocaleString()} kg / 📤 {item.base.salidas.toLocaleString()} kg
+                              📥 {item.tabla1.entradas.toLocaleString()} kg / 📤 {item.tabla1.salidas.toLocaleString()} kg
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.base.origen}</div>
+                            <div className="text-[10px] text-blue-500 font-medium mt-0.5">{item.tabla1.origen}</div>
                           </td>
-                          <td className="py-3.5 px-4 text-center">
+                          {/* Columna Tabla 3 (Mezcla de T1 y T2) */}
+                          <td className="py-3.5 px-4 text-center bg-purple-50/10 border-r border-slate-100">
                             {isBlocked ? (
                               <div className="italic text-rose-500 font-semibold">
-                                Bloqueado (Sin Base)
+                                Bloqueado
                               </div>
                             ) : (
-                              <div className="font-bold text-brand-600">
-                                📥 {item.objetivo.entradas.toLocaleString()} kg / 📤 {item.objetivo.salidas.toLocaleString()} kg
+                              <div className="font-bold text-brand-700">
+                                📥 {item.tabla3.entradas.toLocaleString()} kg / 📤 {item.tabla3.salidas.toLocaleString()} kg
                               </div>
                             )}
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.objetivo.origen}</div>
+                            <div className="text-[10px] text-purple-600 font-medium mt-0.5">{item.tabla3.origen}</div>
                           </td>
+                          {/* Procedencia */}
                           <td className="py-3.5 px-4 text-center">
                             {isBlocked ? (
                               <span className="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-1 rounded text-xs font-bold">
@@ -626,7 +628,7 @@ const AdminDashboard = () => {
                               </span>
                             ) : (
                               <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded text-xs font-bold">
-                                Activo
+                                Proyección Activa
                               </span>
                             )}
                           </td>

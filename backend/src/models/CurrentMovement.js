@@ -48,6 +48,6 @@ const currentMovementSchema = new mongoose.Schema(
   }
 );
 
-const CurrentMovement = mongoose.models.CurrentMovement || mongoose.model('CurrentMovement', currentMovementSchema);
+const CurrentMovement = mongoose.models.CurrentMovement || mongoose.model('CurrentMovement', currentMovementSchema, 'current_movements');
 
 export default CurrentMovement;

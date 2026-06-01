@@ -260,6 +260,21 @@ export class ProductService {
             'Registro de entrada'
           )
         );
+
+        // Registrar en CurrentMovement si el año es 2026
+        const fechaActual = new Date();
+        if (fechaActual.getFullYear() === 2026) {
+          const { default: CurrentMovement } = await import('../models/CurrentMovement.js');
+          await CurrentMovement.create([{
+            productoId: producto._id,
+            nombreProducto: producto.nombreProducto,
+            fecha: fechaActual,
+            tipo: 'Entrada',
+            cantidad: entrada,
+            origen: 'Lote',
+            referenciaId: producto._id
+          }], { session });
+        }
       }
 
       if (salida != null) {
@@ -289,7 +304,7 @@ export class ProductService {
         // Crear alerta de salida (Pedido en estado Pendiente) para Distribución
         const { default: Order } = await import('../models/Order.js');
         const valorCalculado = salida * (producto.costoBase || 0);
-        await Order.create([{
+        const creados = await Order.create([{
           ubicacion: dto.ubicacion || 'Retiro / Mostrador',
           urgencia: 'Media',
           estado: 'Pendiente',
@@ -298,6 +313,21 @@ export class ProductService {
           valorTotal: valorCalculado,
           costoTotal: 0
         }], { session });
+
+        // Registrar en CurrentMovement si el año es 2026
+        const fechaActual = new Date();
+        if (fechaActual.getFullYear() === 2026 && creados && creados.length > 0) {
+          const { default: CurrentMovement } = await import('../models/CurrentMovement.js');
+          await CurrentMovement.create([{
+            productoId: producto._id,
+            nombreProducto: producto.nombreProducto,
+            fecha: fechaActual,
+            tipo: 'Salida',
+            cantidad: salida,
+            origen: 'Despacho',
+            referenciaId: creados[0]._id
+          }], { session });
+        }
       }
 
       if (this._Historial != null && movimientosHistorial.length > 0) {

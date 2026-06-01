@@ -174,19 +174,32 @@ const adminDashboardController = {
       order.costoTotal = Number(costoOperativo);
       await order.save();
 
-      // TRIGGER/VINCULACIÓN: Por cada producto en el pedido, guardar salida en current_movements si es en 2026
+      // TRIGGER/VINCULACIÓN: Por cada producto en el pedido, guardar/actualizar salida en current_movements si es en 2026
       if (order.fechaDespacho.getFullYear() === 2026) {
         for (const item of order.detalles) {
           const prod = await Product.findById(item.productoId);
-          await CurrentMovement.create({
+          
+          // Buscar si ya se creó un movimiento para esta salida (por ejemplo, al registrarla en el inventario)
+          const existingMovement = await CurrentMovement.findOne({
             productoId: item.productoId,
-            nombreProducto: prod ? prod.nombreProducto : 'Producto Desconocido',
-            fecha: order.fechaDespacho,
-            tipo: 'Salida',
-            cantidad: item.cantidad,
-            origen: 'Despacho',
-            referenciaId: order._id
+            referenciaId: order._id,
+            tipo: 'Salida'
           });
+
+          if (existingMovement) {
+            existingMovement.fecha = order.fechaDespacho;
+            await existingMovement.save();
+          } else {
+            await CurrentMovement.create({
+              productoId: item.productoId,
+              nombreProducto: prod ? prod.nombreProducto : 'Producto Desconocido',
+              fecha: order.fechaDespacho,
+              tipo: 'Salida',
+              cantidad: item.cantidad,
+              origen: 'Despacho',
+              referenciaId: order._id
+            });
+          }
         }
       }
 

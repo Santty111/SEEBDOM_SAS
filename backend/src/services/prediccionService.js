@@ -59,102 +59,66 @@ class PrediccionService {
     const seasons = await Season.find().lean().exec();
     const predictionsInserted = [];
 
-    for (const prod of products) {
-      // Obtener datos del año base
-      let baseData = {};
+    // Determinar dinámicamente el año y mes actuales
+    const ahora = new Date();
+    const currentMonth = ahora.getMonth() + 1; // 6 para Junio en 2026
 
-      if (base === 2024 || base === 2025) {
-        // Cargar de la Tabla 1 (Históricos)
-        const histRecords = await HistoricalData.find({ productoId: prod._id, year: base }).lean().exec();
-        for (let m = 1; m <= 12; m++) {
-          const rec = histRecords.find(r => r.month === m);
-          baseData[m] = {
-            entradas: rec ? rec.entradas : 0,
-            salidas: rec ? rec.salidas : 0
-          };
-        }
-      } else if (base === 2026) {
-        // Cargar y consolidar de la Tabla 2 (Actual)
-        baseData = await this.getConsolidatedCurrentMovements(prod._id);
+    for (const prod of products) {
+      // Cargar datos del año base histórico (Tabla 1)
+      const histRecords = await HistoricalData.find({ productoId: prod._id, year: base }).lean().exec();
+      const baseHistData = {};
+      for (let m = 1; m <= 12; m++) {
+        const rec = histRecords.find(r => r.month === m);
+        baseHistData[m] = {
+          entradas: rec ? rec.entradas : 0,
+          salidas: rec ? rec.salidas : 0
+        };
       }
 
-      // Generar predicciones para la Tabla 3 según las reglas
-      if (objetivo === 2026) {
-        // Caso A: Objetivo es 2026. Data real va de 1 a 5 (Tabla 2).
-        // Se calcula proyección únicamente para meses 6 a 12 (Tabla 3)
-        for (let m = 6; m <= 12; m++) {
-          const dataMes = baseData[m] || { entradas: 0, salidas: 0 };
-          const seasonName = this.getSeasonName(m, seasons);
+      // Cargar y consolidar datos de la Tabla 2 (Actualidad - 2026)
+      const actualidadData = await this.getConsolidatedCurrentMovements(prod._id);
 
-          const pred = await Prediction.create({
-            productoId: prod._id,
-            nombreProducto: prod.nombreProducto,
-            yearBase: base,
-            yearObjetivo: objetivo,
-            month: m,
-            entradasProyectadas: dataMes.entradas,
-            salidasProyectadas: dataMes.salidas,
-            temporada: seasonName,
-            status: 'Calculado'
-          });
-          predictionsInserted.push(pred);
-        }
-      } else if (objetivo === 2027) {
-        if (base === 2024 || base === 2025) {
-          // Caso B: Objetivo 2027, Base Histórico (2024/2025) -> Genera los 12 meses completos
-          for (let m = 1; m <= 12; m++) {
-            const dataMes = baseData[m] || { entradas: 0, salidas: 0 };
-            const seasonName = this.getSeasonName(m, seasons);
+      // Generar predicciones para la Tabla 3 según las reglas mixtas
+      for (let m = 1; m <= 12; m++) {
+        const seasonName = this.getSeasonName(m, seasons);
+        let entradasProyectadas = 0;
+        let salidasProyectadas = 0;
+        let status = 'Calculado';
 
-            const pred = await Prediction.create({
-              productoId: prod._id,
-              nombreProducto: prod.nombreProducto,
-              yearBase: base,
-              yearObjetivo: objetivo,
-              month: m,
-              entradasProyectadas: dataMes.entradas,
-              salidasProyectadas: dataMes.salidas,
-              temporada: seasonName,
-              status: 'Calculado'
-            });
-            predictionsInserted.push(pred);
+        if (objetivo === 2026) {
+          if (m <= currentMonth) {
+            // Meses actuales/pasados: Usar Tabla 2 (Actualidad)
+            entradasProyectadas = actualidadData[m].entradas;
+            salidasProyectadas = actualidadData[m].salidas;
+          } else {
+            // Meses futuros sin datos: Copiar de Tabla 1 (Histórico)
+            entradasProyectadas = baseHistData[m].entradas;
+            salidasProyectadas = baseHistData[m].salidas;
           }
-        } else if (base === 2026) {
-          // Caso C: Objetivo 2027, Base Actual (2026) -> Limitar Ene-May y bloquear Jun-Dic
-          for (let m = 1; m <= 12; m++) {
-            const seasonName = this.getSeasonName(m, seasons);
-            const dataMes = baseData[m] || { entradas: 0, salidas: 0 };
-
-            if (m <= 5) {
-              const pred = await Prediction.create({
-                productoId: prod._id,
-                nombreProducto: prod.nombreProducto,
-                yearBase: base,
-                yearObjetivo: objetivo,
-                month: m,
-                entradasProyectadas: dataMes.entradas,
-                salidasProyectadas: dataMes.salidas,
-                temporada: seasonName,
-                status: 'Calculado'
-              });
-              predictionsInserted.push(pred);
-            } else {
-              // Bloqueo explícito
-              const pred = await Prediction.create({
-                productoId: prod._id,
-                nombreProducto: prod.nombreProducto,
-                yearBase: base,
-                yearObjetivo: objetivo,
-                month: m,
-                entradasProyectadas: 0,
-                salidasProyectadas: 0,
-                temporada: seasonName,
-                status: 'Bloqueado'
-              });
-              predictionsInserted.push(pred);
-            }
+        } else if (objetivo === 2027) {
+          if (m <= currentMonth) {
+            // Meses con datos reales en 2026: Usar Tabla 2 (Actualidad 2026) como base
+            entradasProyectadas = actualidadData[m].entradas;
+            salidasProyectadas = actualidadData[m].salidas;
+          } else {
+            // Meses futuros sin datos en 2026: Usar Tabla 1 (Histórico) como base
+            entradasProyectadas = baseHistData[m].entradas;
+            salidasProyectadas = baseHistData[m].salidas;
           }
         }
+
+        const pred = await Prediction.create({
+          productoId: prod._id,
+          nombreProducto: prod.nombreProducto,
+          yearBase: base,
+          yearObjetivo: objetivo,
+          month: m,
+          entradasProyectadas,
+          salidasProyectadas,
+          temporada: seasonName,
+          status
+        });
+        predictionsInserted.push(pred);
       }
     }
 
@@ -172,14 +136,24 @@ class PrediccionService {
     const seasons = await Season.find().lean().exec();
     const predictions = await Prediction.find({ yearBase: base, yearObjetivo: objetivo }).lean().exec();
 
+    const ahora = new Date();
+    const currentMonth = ahora.getMonth() + 1; // 6 para Junio en 2026
+
     const result = [];
 
     for (const prod of products) {
-      let baseData = {};
-      let current2026Data = {};
-
-      // Cargar datos de año base
-      if (base === 2024 || base === 2025) {
+      // 1. Tabla 1: Histórico (base: 2024, 2025, o fallback a 2026)
+      const baseData = {};
+      if (base === 2026) {
+        const consolidated = await this.getConsolidatedCurrentMovements(prod._id);
+        for (let m = 1; m <= 12; m++) {
+          baseData[m] = {
+            entradas: consolidated[m].entradas,
+            salidas: consolidated[m].salidas,
+            origen: `Tabla 2 - Real Bodega (2026)`
+          };
+        }
+      } else {
         const histRecords = await HistoricalData.find({ productoId: prod._id, year: base }).lean().exec();
         for (let m = 1; m <= 12; m++) {
           const rec = histRecords.find(r => r.month === m);
@@ -189,49 +163,37 @@ class PrediccionService {
             origen: `Tabla 1 - Histórico (${base})`
           };
         }
-      } else if (base === 2026) {
-        const consolidated = await this.getConsolidatedCurrentMovements(prod._id);
-        for (let m = 1; m <= 12; m++) {
-          baseData[m] = {
-            entradas: consolidated[m].entradas,
-            salidas: consolidated[m].salidas,
-            // Los meses 1 a 5 de 2026 son reales en Tabla 2, del 6 al 12 no tienen base
-            origen: m <= 5 ? `Tabla 2 - Real Bodega (${base})` : 'Sin datos base'
-          };
-        }
       }
 
-      // Cargar data real de 2026 si el objetivo es 2026
-      if (objetivo === 2026) {
-        current2026Data = await this.getConsolidatedCurrentMovements(prod._id);
-      }
+      // 2. Tabla 2: Actualidad (2026) - siempre se carga para la columna 2
+      const current2026Data = await this.getConsolidatedCurrentMovements(prod._id);
 
       for (let m = 1; m <= 12; m++) {
         const seasonName = this.getSeasonName(m, seasons);
-        let objetivoVal = { entradas: 0, salidas: 0, origen: '', status: 'Calculado' };
+        let prediccionVal = { entradas: 0, salidas: 0, origen: '', status: 'Calculado' };
 
-        if (objetivo === 2026) {
-          if (m <= 5) {
-            // Data real de la Tabla 2
-            objetivoVal.entradas = current2026Data[m].entradas;
-            objetivoVal.salidas = current2026Data[m].salidas;
-            objetivoVal.origen = 'Tabla 2 - Real Bodega (2026)';
+        // 3. Tabla 3: Predicción / Proyección para el año objetivo
+        const pred = predictions.find(p => p.productoId.toString() === prod._id.toString() && p.month === m);
+
+        if (pred) {
+          prediccionVal.entradas = pred.entradasProyectadas;
+          prediccionVal.salidas = pred.salidasProyectadas;
+          prediccionVal.status = pred.status;
+          
+          if (pred.yearObjetivo === 2026) {
+            prediccionVal.origen = m <= currentMonth 
+              ? 'Tabla 3 - Real (Mezcla T2)' 
+              : `Tabla 3 - Proyectado (Mezcla T1 ${base})`;
           } else {
-            // Predicción de la Tabla 3
-            const pred = predictions.find(p => p.productoId.toString() === prod._id.toString() && p.month === m);
-            objetivoVal.entradas = pred ? pred.entradasProyectadas : 0;
-            objetivoVal.salidas = pred ? pred.salidasProyectadas : 0;
-            objetivoVal.origen = pred ? `Tabla 3 - Predicción (${objetivo} desde ${base})` : 'Sin Predicción';
+            prediccionVal.origen = m <= currentMonth 
+              ? `Tabla 3 - Proyectado (Mezcla T2 2026)` 
+              : `Tabla 3 - Proyectado (Mezcla T1 ${base})`;
           }
-        } else if (objetivo === 2027) {
-          // Todo proviene de la Tabla 3 de Predicciones
-          const pred = predictions.find(p => p.productoId.toString() === prod._id.toString() && p.month === m);
-          objetivoVal.entradas = pred ? pred.entradasProyectadas : 0;
-          objetivoVal.salidas = pred ? pred.salidasProyectadas : 0;
-          objetivoVal.status = pred ? pred.status : 'Calculado';
-          objetivoVal.origen = pred 
-            ? (pred.status === 'Bloqueado' ? 'Tabla 3 - Bloqueado (Sin Base)' : `Tabla 3 - Predicción (${objetivo} desde ${base})`)
-            : 'Sin Predicción';
+        } else {
+          prediccionVal.entradas = 0;
+          prediccionVal.salidas = 0;
+          prediccionVal.status = 'Calculado';
+          prediccionVal.origen = 'Sin Predicción (Ejecute el Cruce)';
         }
 
         result.push({
@@ -239,16 +201,21 @@ class PrediccionService {
           productoId: prod._id,
           nombreProducto: prod.nombreProducto,
           temporada: seasonName,
-          base: {
-            entradas: baseData[m] ? baseData[m].entradas : 0,
-            salidas: baseData[m] ? baseData[m].salidas : 0,
-            origen: baseData[m] ? baseData[m].origen : 'Sin datos'
+          tabla1: {
+            entradas: baseData[m].entradas,
+            salidas: baseData[m].salidas,
+            origen: baseData[m].origen
           },
-          objetivo: {
-            entradas: objetivoVal.entradas,
-            salidas: objetivoVal.salidas,
-            origen: objetivoVal.origen,
-            status: objetivoVal.status
+          tabla2: {
+            entradas: current2026Data[m].entradas,
+            salidas: current2026Data[m].salidas,
+            origen: m <= currentMonth ? `Tabla 2 - Real Bodega (2026)` : 'Sin datos real'
+          },
+          tabla3: {
+            entradas: prediccionVal.entradas,
+            salidas: prediccionVal.salidas,
+            origen: prediccionVal.origen,
+            status: prediccionVal.status
           }
         });
       }
