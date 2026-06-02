@@ -491,9 +491,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-slate-600 mt-1">
                     Cruce de persistencia de datos entre <strong>Tabla 1 (Histórico)</strong>, <strong>Tabla 2 (Bodega Actual 2026)</strong> y <strong>Tabla 3 (Predicciones Copiadas)</strong>.
                   </p>
-                </div>
-                
-                {/* Selectores Manuales y Controladores */}
+                           {/* Selectores Manuales y Controladores */}
                 <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 w-full md:w-auto">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Tabla 1: Histórico</span>
@@ -507,8 +505,21 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   
-                  <div className="text-slate-300 font-bold">➔</div>
- 
+                  <div className="text-slate-400 font-bold text-sm">➕</div>
+  
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Tabla 2: Actualidad</span>
+                    <select
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-brand-500"
+                      value="2026"
+                      readOnly
+                    >
+                      <option value="2026">2026 (T2)</option>
+                    </select>
+                  </div>
+
+                  <div className="text-slate-400 font-bold text-sm">➔</div>
+
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Tabla 3: Proyección</span>
                     <select
@@ -580,6 +591,7 @@ const AdminDashboard = () => {
                       <th className="py-3 px-4">Mes</th>
                       <th className="py-3 px-4">Temporada</th>
                       <th className="py-3 px-4 text-center bg-blue-50/50 border-x border-slate-200/50">Tabla 1: Histórico ({yearBase})</th>
+                      <th className="py-3 px-4 text-center bg-emerald-50/30 border-r border-slate-200/50">Tabla 2: Actualidad (2026)</th>
                       <th className="py-3 px-4 text-center bg-purple-50/30 border-r border-slate-200/50">Tabla 3: Proyección ({yearObjetivo})</th>
                       <th className="py-3 px-4 text-center">Procedencia y Cierre</th>
                     </tr>
@@ -608,6 +620,13 @@ const AdminDashboard = () => {
                               📥 {item.tabla1.entradas.toLocaleString()} kg / 📤 {item.tabla1.salidas.toLocaleString()} kg
                             </div>
                             <div className="text-[10px] text-blue-500 font-medium mt-0.5">{item.tabla1.origen}</div>
+                          </td>
+                          {/* Columna Tabla 2 (Actualidad 2026) */}
+                          <td className="py-3.5 px-4 text-center bg-emerald-50/10 border-r border-slate-100">
+                            <div className="font-medium text-slate-700">
+                              📥 {item.tabla2.entradas.toLocaleString()} kg / 📤 {item.tabla2.salidas.toLocaleString()} kg
+                            </div>
+                            <div className="text-[10px] text-emerald-600 font-medium mt-0.5">{item.tabla2.origen}</div>
                           </td>
                           {/* Columna Tabla 3 (Mezcla de T1 y T2) */}
                           <td className="py-3.5 px-4 text-center bg-purple-50/10 border-r border-slate-100">
@@ -641,9 +660,11 @@ const AdminDashboard = () => {
                       .filter(item => selectedProductFilter === 'Todos' || item.nombreProducto === selectedProductFilter)
                       .filter(item => selectedMonthFilter === 'Todos' || item.month === Number(selectedMonthFilter)).length === 0 && (
                       <tr>
-                        <td colSpan="6" className="py-12 text-center text-slate-500 italic">
+                        <td colSpan="7" className="py-12 text-center text-slate-500 italic">
                           No hay datos correspondientes a los filtros de producto y mes seleccionados.
                         </td>
+                      </tr>
+                    )}
                       </tr>
                     )}
                   </tbody>
