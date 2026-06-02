@@ -491,6 +491,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-slate-600 mt-1">
                     Cruce de persistencia de datos entre <strong>Tabla 1 (Histórico)</strong>, <strong>Tabla 2 (Bodega Actual 2026)</strong> y <strong>Tabla 3 (Predicciones Copiadas)</strong>.
                   </p>
+                </div>
                            {/* Selectores Manuales y Controladores */}
                 <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 w-full md:w-auto">
                   <div className="flex items-center gap-2">
