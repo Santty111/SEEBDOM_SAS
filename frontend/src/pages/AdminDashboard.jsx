@@ -14,6 +14,8 @@ import {
   Scale
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'http://localhost:5000';
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('cruce');
   const [orders, setOrders] = useState([]);
@@ -59,7 +61,7 @@ const AdminDashboard = () => {
 
   const fetchComparisonGrid = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/dashboard/predicciones/comparar?yearBase=${yearBase}&yearObjetivo=${yearObjetivo}`, {
+      const res = await fetch(`${API_URL}/api/admin/dashboard/predicciones/comparar?yearBase=${yearBase}&yearObjetivo=${yearObjetivo}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
       });
       const data = await res.json();
@@ -74,7 +76,7 @@ const AdminDashboard = () => {
   const handleRunCruce = async () => {
     setCalculatingCruce(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/dashboard/predicciones/calcular', {
+      const res = await fetch(`${API_URL}/api/admin/dashboard/predicciones/calcular`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,13 +101,13 @@ const AdminDashboard = () => {
     try {
       // Usamos Promise.all para cargar todo en paralelo (Senior practice)
       const [distRes, alertRes, supplyRes, productsRes] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/dashboard/distribucion', {
+        fetch(`${API_URL}/api/admin/dashboard/distribucion`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
         }).then(res => res.json()),
-        fetch('http://localhost:5000/api/admin/dashboard/alertas', {
+        fetch(`${API_URL}/api/admin/dashboard/alertas`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
         }).then(res => res.json()),
-        fetch('http://localhost:5000/api/admin/dashboard/abastecimiento', {
+        fetch(`${API_URL}/api/admin/dashboard/abastecimiento`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('sebdom.auth.token')}` }
         }).then(res => res.json()),
         fetchProducts()
@@ -134,7 +136,7 @@ const AdminDashboard = () => {
     try {
       const costo = dispatchType === 'Delivery' ? (Number(dispatchCost) || 0) : 0;
       
-      await fetch(`http://localhost:5000/api/admin/dashboard/despacho/${dispatchOrderTarget._id}`, {
+      await fetch(`${API_URL}/api/admin/dashboard/despacho/${dispatchOrderTarget._id}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -154,7 +156,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!newOrderLoc) return;
     try {
-      await fetch('http://localhost:5000/api/admin/dashboard/pedidos', {
+      await fetch(`${API_URL}/api/admin/dashboard/pedidos`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -171,7 +173,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!newSupplyProv || !newSupplyEta) return;
     try {
-      await fetch('http://localhost:5000/api/admin/dashboard/abastecimiento', {
+      await fetch(`${API_URL}/api/admin/dashboard/abastecimiento`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

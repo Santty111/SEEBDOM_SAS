@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { createProduct } from '../../services/productApi.js';
 import { getApiErrorMessage } from '../../utils/apiErrors.js';
 
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'http://localhost:5000';
+
 export function NewProductModal({ open, onClose, onCreated }) {
   const titleId = useId();
   const nameId = useId();
@@ -17,7 +19,7 @@ export function NewProductModal({ open, onClose, onCreated }) {
 
   useEffect(() => {
     // Fetch categories para el dropdown relacional
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${API_URL}/api/categories`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
