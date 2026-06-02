@@ -665,8 +665,6 @@ const AdminDashboard = () => {
                         </td>
                       </tr>
                     )}
-                      </tr>
-                    )}
                   </tbody>
                 </table>
               </div>
